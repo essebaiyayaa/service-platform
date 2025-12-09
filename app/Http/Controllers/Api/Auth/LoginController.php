@@ -17,30 +17,24 @@ class LoginController extends Controller
     {
         $data = $request->validated();
 
-        // Récupérer l'utilisateur par email
         $user = Utilisateur::where('email', $data['email'])->first();
 
-        // Vérifier si l'utilisateur existe et si le mot de passe est correct
         if (!$user || !Hash::check($data['password'], $user->password)) {
             return back()->withErrors([
                 'email' => 'Les identifiants fournis sont incorrects.',
             ])->onlyInput('email');
         }
 
-        // Vérifier si le compte est actif
         if ($user->statut !== 'actif') {
             return back()->withErrors([
                 'email' => 'Votre compte est suspendu. Veuillez contacter l\'administrateur.',
             ])->onlyInput('email');
         }
 
-        // Connecter l'utilisateur
         Auth::login($user, $data['remember'] ?? false);
 
-        // Régénérer la session pour la sécurité
         $request->session()->regenerate();
 
-        // Rediriger selon le rôle
         return $this->redirectBasedOnRole($user);
     }
 

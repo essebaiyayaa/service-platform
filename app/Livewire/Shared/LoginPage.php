@@ -9,7 +9,7 @@ class LoginPage extends Component
 {
     public $email = '';
     public $password = '';
-    public $remember = false;
+    // public $remember = false;
     public $showPassword = false;
 
     protected $rules = [
@@ -29,26 +29,26 @@ class LoginPage extends Component
         $this->showPassword = !$this->showPassword;
     }
 
-    public function fillBabysitterCredentials()
-    {
-        $this->email = 'babysitter@helpora.com';
-        $this->password = 'baby123';
-        $this->remember = false;
-    }
+    // public function fillBabysitterCredentials()
+    // {
+    //     $this->email = 'babysitter@helpora.com';
+    //     $this->password = 'baby123';
+    //     $this->remember = false;
+    // }
 
-    public function fillClientCredentials()
-    {
-        $this->email = 'client@helpora.com';
-        $this->password = 'client123';
-        $this->remember = false;
-    }
+    // public function fillClientCredentials()
+    // {
+    //     $this->email = 'client@helpora.com';
+    //     $this->password = 'client123';
+    //     $this->remember = false;
+    // }
 
     public function login()
     {
         $this->validate();
 
         // Tenter l'authentification
-        if (Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
+        if (Auth::attempt(['email' => $this->email, 'password' => $this->password])) {
             session()->regenerate();
 
             $user = Auth::user();
@@ -79,13 +79,13 @@ class LoginPage extends Component
 
     public function navigateToRegister()
     {
-        return redirect()->route('register');
+        return redirect('/inscriptionClient');
     }
 
-    public function navigateToForgotPassword()
-    {
-        return redirect()->route('password.request');
-    }
+    // public function navigateToForgotPassword()
+    // {
+    //     return redirect()->route('password.request');
+    // }
 
     public function navigateToHome()
     {
