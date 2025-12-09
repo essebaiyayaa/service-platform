@@ -4,10 +4,17 @@ namespace App\Livewire\Babysitter;
 
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use App\Models\User;
+use App\Models\shared\Utilisateur;
+use App\Models\shared\Intervenant;
 use App\Models\Babysitting\Babysitter;
+use App\Models\Babysitting\PreferenceDomicil;
+use App\Models\Babysitting\Superpouvoir;
+use App\Models\Babysitting\Formation;
+use App\Models\Babysitting\CategorieEnfant;
+use App\Models\shared\Disponibilite;
+use App\Models\shared\Localisation;
 use Illuminate\Support\Facades\Hash;
-
+use Illuminate\Support\Facades\DB;
 
 class BabysitterRegistration extends Component
 {
@@ -24,6 +31,7 @@ class BabysitterRegistration extends Component
 
     // Étape 2
     public $telephone, $adresse, $photo_profil;
+    public $latitude, $longitude, $ville;
 
     // Étape 3
     public $prix_horaire, $annees_experience, $niveau_etudes;
@@ -56,7 +64,7 @@ class BabysitterRegistration extends Component
             $rules = [
                 'prenom' => 'required|string|max:255',
                 'nom' => 'required|string|max:255',
-                'email' => 'required|email|unique:users,email',
+                'email' => 'required|email|unique:utilisateurs,email',
                 'date_naissance' => 'required|date|before:today',
                 'mot_de_passe' => 'required|min:8|confirmed',
             ];
@@ -66,6 +74,7 @@ class BabysitterRegistration extends Component
             $rules = [
                 'telephone' => 'required|string|max:20',
                 'adresse' => 'required|string|max:500',
+                'photo_profil' => 'nullable|image|max:5120',
             ];
         }
 
@@ -83,6 +92,9 @@ class BabysitterRegistration extends Component
         if ($this->currentStep == 5) {
             $rules = [
                 'casier_judiciaire' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+                'radiographie_thorax' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+                'coproculture_selles' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+                'certificat_aptitude' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             ];
         }
 
@@ -98,6 +110,7 @@ class BabysitterRegistration extends Component
             'email.email' => 'L\'email doit être valide',
             'email.unique' => 'Cet email est déjà utilisé',
             'date_naissance.required' => 'La date de naissance est obligatoire',
+            'date_naissance.before' => 'La date de naissance doit être antérieure à aujourd\'hui',
             'mot_de_passe.required' => 'Le mot de passe est obligatoire',
             'mot_de_passe.min' => 'Le mot de passe doit contenir au moins 8 caractères',
             'mot_de_passe.confirmed' => 'Les mots de passe ne correspondent pas',
@@ -144,70 +157,165 @@ class BabysitterRegistration extends Component
     {
         $this->validate();
 
+        DB::beginTransaction();
+
         try {
-            // Créer l'utilisateur
-            $user = User::create([
-                'name' => $this->prenom . ' ' . $this->nom,
+            // 1. Créer l'utilisateur
+            $photoPath = null;
+            if ($this->photo_profil) {
+                $photoPath = $this->photo_profil->store('babysitters/photos', 'public');
+            }
+
+            $utilisateur = Utilisateur::create([
+                'nom' => $this->nom,
+                'prenom' => $this->prenom,
                 'email' => $this->email,
                 'password' => Hash::make($this->mot_de_passe),
-                'role' => 'babysitter',
+                'telephone' => $this->telephone,
+                'dateNaissance' => $this->date_naissance,
+                'role' => 'intervenant',
+                'statut' => 'actif',
+                'photo' => $photoPath,
             ]);
 
-            // Upload de la photo de profil
-            $photoPath = $this->photo_profil ? 
-                $this->photo_profil->store('babysitters/photos', 'public') : null;
+            // 2. Créer la localisation (optionnel)
+            if ($this->adresse) {
+                Localisation::create([
+                    'idUser' => $utilisateur->idUser,
+                    'latitude' => $this->latitude ?? 0,
+                    'longitude' => $this->longitude ?? 0,
+                    'ville' => $this->ville ?? '',
+                    'adresse' => $this->adresse,
+                ]);
+            }
 
-            // Upload des documents
-            $documents = [];
-            if ($this->radiographie_thorax) {
-                $documents['radiographie_thorax'] = $this->radiographie_thorax->store('babysitters/documents', 'public');
+            // 3. Créer l'intervenant
+            $intervenant = Intervenant::create([
+                'IdIntervenant' => $utilisateur->idUser,
+                'statut' => 'EN_ATTENTE',
+            ]);
+
+            // 4. Upload des documents
+            $procedeJuridique = null;
+            $coprocultureSelles = null;
+            $certifAptitude = null;
+            $radiographieThorax = null;
+
+            if ($this->casier_judiciaire) {
+                $procedeJuridique = $this->casier_judiciaire->store('babysitters/documents', 'public');
             }
             if ($this->coproculture_selles) {
-                $documents['coproculture_selles'] = $this->coproculture_selles->store('babysitters/documents', 'public');
+                $coprocultureSelles = $this->coproculture_selles->store('babysitters/documents', 'public');
             }
             if ($this->certificat_aptitude) {
-                $documents['certificat_aptitude'] = $this->certificat_aptitude->store('babysitters/documents', 'public');
+                $certifAptitude = $this->certificat_aptitude->store('babysitters/documents', 'public');
             }
-            if ($this->casier_judiciaire) {
-                $documents['casier_judiciaire'] = $this->casier_judiciaire->store('babysitters/documents', 'public');
+            if ($this->radiographie_thorax) {
+                $radiographieThorax = $this->radiographie_thorax->store('babysitters/documents', 'public');
             }
 
-            // Créer le profil babysitter
-            Babysitter::create([
-                'user_id' => $user->id,
-                'prenom' => $this->prenom,
-                'nom' => $this->nom,
-                'date_naissance' => $this->date_naissance,
-                'telephone' => $this->telephone,
-                'adresse' => $this->adresse,
-                'photo_profil' => $photoPath,
-                'je_fume' => $this->je_fume,
-                'jai_enfants' => $this->jai_enfants,
-                'permis_conduire' => $this->permis_conduire,
-                'jai_voiture' => $this->jai_voiture,
-                'prix_horaire' => $this->prix_horaire,
-                'annees_experience' => $this->annees_experience,
-                'niveau_etudes' => $this->niveau_etudes,
+            // 5. Créer le profil babysitter
+            $babysitter = Babysitter::create([
+                'idBabysitter' => $intervenant->IdIntervenant,
+                'prixHeure' => $this->prix_horaire,
+                'expAnnee' => $this->annees_experience,
+                'niveauEtudes' => $this->niveau_etudes,
                 'description' => $this->description,
-                'experience_detaillee' => $this->experience_detaillee,
-                'langues' => $this->langues,
-                'categories_enfants' => $this->categories_enfants,
-                'certifications' => $this->certifications,
-                'superpowers' => $this->superpowers,
-                'disponibilites' => $this->disponibilites,
-                'documents' => $documents,
-                'statut' => 'en_attente',
+                'langues' => json_encode($this->langues),
+                'procedeJuridique' => $procedeJuridique,
+                'coprocultureSelles' => $coprocultureSelles,
+                'certifAptitudeMentale' => $certifAptitude,
+                'radiographieThorax' => $radiographieThorax,
+                'estFumeur' => $this->je_fume,
+                'mobilite' => $this->jai_voiture,
+                'possedeEnfant' => $this->jai_enfants,
+                'permisConduite' => $this->permis_conduire,
+                'maladies' => $this->experience_detaillee,
             ]);
 
+            // 6. Associer les catégories d'enfants
+            if (!empty($this->categories_enfants)) {
+                foreach ($this->categories_enfants as $categorieNom) {
+                    $categorie = CategorieEnfant::firstOrCreate(['categorie' => $categorieNom]);
+                    DB::table('choisir_categories')->insert([
+                        'idCategorie' => $categorie->idCategorie,
+                        'idBabysitter' => $babysitter->idBabysitter,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+
+            // 7. Associer les formations/certifications
+            if (!empty($this->certifications)) {
+                foreach ($this->certifications as $formationNom) {
+                    $formation = Formation::firstOrCreate(['formation' => $formationNom]);
+                    DB::table('choisir_formations')->insert([
+                        'idFormation' => $formation->idFormation,
+                        'idBabysitter' => $babysitter->idBabysitter,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+
+            // 8. Associer les superpourvoirs
+            if (!empty($this->superpowers)) {
+                foreach ($this->superpowers as $superpouvoirNom) {
+                    $superpouvoir = Superpouvoir::firstOrCreate(['superpouvoir' => $superpouvoirNom]);
+                    DB::table('choisir_superpourvoirs')->insert([
+                        'idSuperpouvoir' => $superpouvoir->idSuperpouvoir,
+                        'idBabysitter' => $babysitter->idBabysitter,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+
+            // 9. Créer les disponibilités
+            $jourMapping = [
+                'lundi' => 'Lundi',
+                'mardi' => 'Mardi',
+                'mercredi' => 'Mercredi',
+                'jeudi' => 'Jeudi',
+                'vendredi' => 'Vendredi',
+                'samedi' => 'Samedi',
+                'dimanche' => 'Dimanche',
+            ];
+
+            foreach ($this->disponibilites as $jour => $plages) {
+                if (!empty($plages)) {
+                    foreach ($plages as $plage) {
+                        if (!empty($plage['debut']) && !empty($plage['fin'])) {
+                            Disponibilite::create([
+                                'idIntervenant' => $intervenant->IdIntervenant,
+                                'jourSemaine' => $jourMapping[$jour],
+                                'heureDebut' => $plage['debut'],
+                                'heureFin' => $plage['fin'],
+                                'est_reccurent' => true,
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            DB::commit();
+
+            session()->flash('success', 'Inscription réussie ! Votre profil est en attente de validation par un administrateur.');
             
+            return redirect()->to('/connexion');
+
         } catch (\Exception $e) {
+            DB::rollBack();
+            
             session()->flash('error', 'Une erreur est survenue lors de l\'inscription: ' . $e->getMessage());
+            
+            return;
         }
     }
 
     public function render()
     {
         return view('livewire.babysitter.babysitter-registration');
-        
     }
 }
