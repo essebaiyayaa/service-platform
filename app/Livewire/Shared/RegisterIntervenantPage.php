@@ -29,6 +29,15 @@ class RegisterIntervenantPage extends Component
         }
     }
 
+    // NOUVELLE MÉTHODE : Quand le type de service change
+    public function updatedServiceType($value)
+    {
+        // Si babysitter est sélectionné, rediriger immédiatement
+        if ($value === 'babysitter') {
+            return redirect('/inscriptionBabysitter');
+        }
+    }
+
     // Méthode d'inscription
     public function register()
     {
@@ -40,11 +49,24 @@ class RegisterIntervenantPage extends Component
         // Valider le type de service
         $this->validate();
 
-        // Rediriger vers la page de formulaire avec le type de service
-        // Vous pouvez passer le serviceType en session ou en paramètre
-        session(['serviceType' => $this->serviceType]);
-        
-        return redirect('/inscriptionIntervenant/formulaire');
+        // Redirection selon le type de service
+        switch ($this->serviceType) {
+            case 'babysitter':
+                return redirect('/inscriptionBabysitter');
+            
+            case 'professeur':
+                // Rediriger vers le formulaire professeur
+                session(['serviceType' => 'professeur']);
+                return redirect('/inscriptionIntervenant/formulaire');
+            
+            case 'petkeeper':
+                // Rediriger vers le formulaire petkeeper
+                session(['serviceType' => 'petkeeper']);
+                return redirect('/inscriptionIntervenant/formulaire');
+            
+            default:
+                return redirect('/inscriptionIntervenant/formulaire');
+        }
     }
 
     // Méthode de rendu
