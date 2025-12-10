@@ -61,12 +61,7 @@ class LoginPage extends Component
             return redirect()->route('home');
         }
 
-        // Authentification normale
-        if (Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
-            session()->regenerate();
-            return redirect()->intended('/dashboard');
-        }
-
+     
         $this->addError('email', 'Email ou mot de passe incorrect.');
     }
 
