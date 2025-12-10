@@ -19,6 +19,8 @@ class BabysitterBooking extends Component
     public $agreedToTerms = false;
     public $showSuccess = false;
     public $message = '';
+    public $isTimeValid = null; // null = pas encore testé / true / false
+
 
     protected $queryString = ['babysitterId'];
 
@@ -35,6 +37,45 @@ class BabysitterBooking extends Component
             $this->selectedServices[] = $serviceId;
         }
     }
+    public function validateTime()
+{
+    if (!$this->selectedDay || !$this->startTime || !$this->endTime) {
+        $this->isTimeValid = null;
+        return;
+    }
+
+    if (strtotime($this->startTime) >= strtotime($this->endTime)) {
+        $this->isTimeValid = false;
+        return;
+    }
+
+    $babysitter = $this->getBabysitter();
+    $availability = $babysitter['availability'] ?? [];
+
+    if (!isset($availability[$this->selectedDay])) {
+        $this->isTimeValid = false;
+        return;
+    }
+
+    foreach ($availability[$this->selectedDay] as $slot) {
+        $slot = trim($slot);
+
+        if (!str_contains($slot, '-')) continue;
+
+        [$slotStart, $slotEnd] = array_map('trim', explode('-', $slot));
+
+        if (
+            strtotime($this->startTime) >= strtotime($slotStart) &&
+            strtotime($this->endTime) <= strtotime($slotEnd)
+        ) {
+            $this->isTimeValid = true;
+            return;
+        }
+    }
+
+    $this->isTimeValid = false;
+}
+
 
     public function addChild()
     {
@@ -93,30 +134,62 @@ class BabysitterBooking extends Component
         }
     }
 
-    public function isTimeSlotValid()
-    {
-        if (!$this->startTime || !$this->endTime || !$this->selectedDay) {
-            return true;
-        }
-
-        $babysitter = $this->getBabysitter();
-        $availableSlots = $babysitter['availability'][$this->selectedDay] ?? [];
-
-        foreach ($availableSlots as $slot) {
-            [$slotStart, $slotEnd] = explode('-', $slot);
-            
-            $slotStartVal = (int)str_replace(':', '', $slotStart);
-            $slotEndVal = (int)str_replace(':', '', $slotEnd);
-            $selectedStartVal = (int)str_replace(':', '', $this->startTime);
-            $selectedEndVal = (int)str_replace(':', '', $this->endTime);
-
-            if ($selectedStartVal >= $slotStartVal && $selectedEndVal <= $slotEndVal) {
-                return true;
-            }
-        }
-
+   public function isTimeSlotValid()
+{
+    
+    if (!$this->startTime || !$this->endTime || !$this->selectedDay) {
         return false;
     }
+
+    // start < end obligatoire
+    if (strtotime($this->startTime) >= strtotime($this->endTime)) {
+        return false;
+    }
+
+    $babysitter = $this->getBabysitter();
+    $availability = $babysitter['availability'] ?? [];
+
+    if (!isset($availability[$this->selectedDay])) {
+        return false;
+    }
+
+    foreach ($availability[$this->selectedDay] as $slot) {
+
+        // Nettoyage des espaces invisibles éventuels
+        $slot = trim($slot);
+
+        if (!str_contains($slot, '-')) continue;
+
+        [$slotStart, $slotEnd] = array_map('trim', explode('-', $slot));
+
+        $slotStartTs = strtotime($slotStart);
+        $slotEndTs = strtotime($slotEnd);
+        $selectedStartTs = strtotime($this->startTime);
+        $selectedEndTs = strtotime($this->endTime);
+
+        // ➜ INCLUSIF SUR LES LIMITES
+        if ($selectedStartTs >= $slotStartTs && $selectedEndTs <= $slotEndTs) {
+            return true;
+        }
+    }
+
+    return false;
+}
+public function updatedSelectedDay()
+{
+    $this->validateTime();
+}
+
+public function updatedStartTime()
+{
+    $this->validateTime();
+}
+
+public function updatedEndTime()
+{
+    $this->validateTime();
+}
+
 
     private function getBabysitter()
     {
