@@ -12,6 +12,8 @@ use App\Models\Babysitting\ExperienceBesoinSpeciaux;
 
 class Babysitter extends Model
 {
+    public $timestamps = false;
+    
     protected $table = 'babysitters';
     protected $primaryKey = 'idBabysitter';
     
