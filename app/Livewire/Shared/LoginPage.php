@@ -47,21 +47,6 @@ class LoginPage extends Component
     {
         $this->validate();
 
-<<<<<<< HEAD
-        // Test credentials pour babysitter
-        if ($this->email === 'babysitter@helpora.com' && $this->password === 'baby123') {
-            session()->flash('success', 'Connexion réussie en tant que babysitter !');
-            return redirect()->route('babysitter.dashboard');
-        }
-
-        // Test credentials pour client
-        if ($this->email === 'client@helpora.com' && $this->password === 'client123') {
-            session()->flash('success', 'Connexion réussie en tant que client !');
-            return redirect()->route('home');
-        }
-
-     
-=======
         // Tenter l'authentification
         if (Auth::attempt(['email' => $this->email, 'password' => $this->password])) {
             session()->regenerate();
@@ -89,7 +74,6 @@ class LoginPage extends Component
             return redirect('/');
         }
 
->>>>>>> a1bdcd3ba03f7cc5600329f39c9d5e2ad26eb5de
         $this->addError('email', 'Email ou mot de passe incorrect.');
     }
 
