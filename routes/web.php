@@ -10,6 +10,9 @@ use App\Livewire\Tutoring\TutorDetails;
 use App\Livewire\Tutoring\ProfessorsList;
 use App\Livewire\Shared\RegisterClientPage;
 use App\Livewire\Shared\RegisterIntervenantPage;
+
+use App\Livewire\Tutoring\Dashboard;
+use App\Livewire\Shared\IntervenantHub;
 use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\RegisterController;
 
@@ -31,3 +34,9 @@ Route::get('/inscriptionProfesseur', \App\Livewire\Tutoring\RegisterProfesseur::
 // Tutoring routes (client side)
 Route::get('/services/professors-list', ProfessorsList::class)->name('professors-list');
 Route::get('/professeurs/{id}', TutorDetails::class)->name('professeurs.details');
+
+Route::middleware(['auth'])->group(function () {
+   // Route::get('/tutoring/dashboard', Dashboard::class)->name('tutoring.dashboard');
+    Route::get('/intervenant/hub', IntervenantHub::class)->name('intervenant.hub');
+});
+
