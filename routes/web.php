@@ -1,15 +1,17 @@
 <?php
 
+use App\Livewire\Shared\Register;
+use App\Livewire\Shared\LoginPage;
+use App\Livewire\Shared\ContactPage;
 use App\Livewire\Shared\LandingPage;
 use App\Livewire\Shared\ServicesPage;
-use App\Livewire\Shared\ContactPage;
-use App\Livewire\Shared\LoginPage;
-use App\Livewire\Shared\Register;
+use Illuminate\Support\Facades\Route;
+use App\Livewire\Tutoring\TutorDetails;
+use App\Livewire\Tutoring\ProfessorsList;
 use App\Livewire\Shared\RegisterClientPage;
 use App\Livewire\Shared\RegisterIntervenantPage;
-use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Http\Controllers\Api\Auth\LoginController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\Auth\RegisterController;
 
 
 Route::get('/', LandingPage::class);
@@ -25,3 +27,7 @@ Route::post('/register-client', [RegisterController::class, 'store'])->name('reg
 Route::post('/connexion', [LoginController::class, 'store'])->name('login.store');
 Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 Route::get('/inscriptionProfesseur', \App\Livewire\Tutoring\RegisterProfesseur::class);
+
+// Tutoring routes (client side)
+Route::get('/services/professors-list', ProfessorsList::class)->name('professors-list');
+Route::get('/professeurs/{id}', TutorDetails::class)->name('professeurs.details');
