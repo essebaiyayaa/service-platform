@@ -25,3 +25,8 @@ Route::post('/register-client', [RegisterController::class, 'store'])->name('reg
 Route::post('/connexion', [LoginController::class, 'store'])->name('login.store');
 Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 Route::get('/inscriptionProfesseur', \App\Livewire\Tutoring\RegisterProfesseur::class);
+
+
+Route::prefix('pet-keeping')->group(function(){
+    Route::get('search-service', \App\Livewire\PetKeeping\SearchService::class);
+});
