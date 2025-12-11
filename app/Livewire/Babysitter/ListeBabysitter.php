@@ -119,7 +119,7 @@ class ListeBabysitter extends Component
         // Filtre par services (superpouvoirs)
         if (!empty($this->selectedServices)) {
             $query->whereHas('superpouvoirs', function ($q) {
-                $q->whereIn('idSuperpouvoir', $this->selectedServices);
+                $q->whereIn('superpouvoirs.idSuperpouvoir', $this->selectedServices);
             }, '=', count($this->selectedServices));
         }
 
