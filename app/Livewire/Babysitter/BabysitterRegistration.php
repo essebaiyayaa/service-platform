@@ -7,6 +7,8 @@ use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\BabysitterRegistrationMail;
 use App\Models\shared\Intervenant;
 use App\Models\shared\Utilisateur;
 use App\Models\Babysitting\Babysitter;
@@ -407,9 +409,20 @@ class BabysitterRegistration extends Component
 
             DB::commit();
 
-            session()->flash('success', 'Inscription réussie ! Votre profil est en attente de validation par un administrateur.');
-            
-            return redirect()->to('/connexion');
+            // Envoyer l'email de confirmation
+            try {
+                \Log::info('Tentative envoi email à: ' . $this->email);
+                
+                // Envoyer à l'email du babysitter
+                Mail::to($this->email)->send(new BabysitterRegistrationMail($this->nom, $this->prenom));
+                
+                \Log::info('Email envoyé avec succès à: ' . $this->email);
+            } catch (\Exception $e) {
+                // Continue même si l'email échoue
+                \Log::error('Erreur envoi email babysitter: ' . $e->getMessage());
+            }
+
+            return redirect('/')->with('success', 'Votre candidature a été soumise avec succès ! Un email de confirmation vous a été envoyé.');
 
         } catch (\Exception $e) {
             DB::rollBack();
