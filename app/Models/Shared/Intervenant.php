@@ -37,7 +37,7 @@ class Intervenant extends Model
 
     public function services()
     {
-        return $this->belongsToMany(Service::class, 'offres_services', 'idIntervenant', 'idService');
+        return $this->belongsToMany(Service::class, 'offres_services', 'idIntervenant', 'idService','IdIntervenant','idService' );
     }
 
     public function disponibilites()

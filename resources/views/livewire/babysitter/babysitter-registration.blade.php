@@ -183,12 +183,18 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">
-                            Adresse complète <span class="text-red-500">*</span>
+                            Adresse complète 
+                            @if(!$auto_localisation) <span class="text-red-500">*</span> @endif
                         </label>
                         <input type="text" wire:model="adresse"
-                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                            placeholder="Rue, Ville">
-                        @error('adresse') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent {{ $auto_localisation ? 'bg-gray-100' : '' }}"
+                            placeholder="Rue, Ville"
+                            @if($auto_localisation) disabled @endif>
+                        @if(!$auto_localisation)
+                            @error('adresse') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        @else
+                            <p class="text-xs text-gray-500 mt-1">Adresse non requise avec la géolocalisation automatique</p>
+                        @endif
                     </div>
 
                     <div>
@@ -277,10 +283,10 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">
-                            Expérience détaillée <span class="text-red-500">*</span>
+                            Maladies <span class="text-red-500">*</span>
                         </label>
                         <textarea wire:model="experience_detaillee" rows="3"
-                            placeholder="Décrivez votre expérience avec les enfants..."
+                            placeholder="Décrivez les maladies que vous connaissez et savez gérer..."
                             class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"></textarea>
                         @error('experience_detaillee') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
@@ -560,6 +566,7 @@
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
                         const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
                         const lon = position.coords.longitude;
                         
                         // Utiliser l'API de géocodage inversé (Nominatim OpenStreetMap)
