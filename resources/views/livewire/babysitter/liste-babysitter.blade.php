@@ -112,14 +112,14 @@
                             <input
                                 type="range"
                                 min="30"
-                                max="150"
+                                max="250"
                                 step="5"
                                 wire:model.live="priceMax"
                                 class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#B82E6E]"
                             />
                             <div class="flex justify-between mt-2 text-xs text-gray-500 font-medium">
                                 <span>30 DH</span>
-                                <span>150 DH</span>
+                                <span>250 DH</span>
                             </div>
                         </div>
 
@@ -147,6 +147,24 @@
                                     </div>
                                     <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900">Permis de conduire</span>
                                 </label>
+                                <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors group">
+                                    <div class="relative flex items-center">
+                                        <input type="checkbox" wire:model.live="voiture" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-300 transition-all checked:border-[#B82E6E] checked:bg-[#B82E6E]" />
+                                        <svg class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100 w-3.5 h-3.5" viewBox="0 0 14 14" fill="none">
+                                            <path d="M3 8L6 11L11 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900">A une voiture</span>
+                                </label>
+                                <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors group">
+                                    <div class="relative flex items-center">
+                                        <input type="checkbox" wire:model.live="possede_enfant" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-300 transition-all checked:border-[#B82E6E] checked:bg-[#B82E6E]" />
+                                        <svg class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100 w-3.5 h-3.5" viewBox="0 0 14 14" fill="none">
+                                            <path d="M3 8L6 11L11 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900">A des enfants</span>
+                                </label>
                             </div>
                         </div>
 
@@ -168,6 +186,60 @@
                             </div>
                         </div>
 
+                        <!-- Formations -->
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-3">
+                                Formations
+                            </label>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach($allFormations as $formation)
+                                <button
+                                    wire:click="toggleFormation({{ $formation->idFormation }})"
+                                    type="button"
+                                    class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border {{ in_array($formation->idFormation, $selectedFormations) ? 'bg-[#B82E6E] text-white border-[#B82E6E] shadow-sm' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50' }}"
+                                >
+                                    {{ $formation->formation }}
+                                </button>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- Catégories d'enfants -->
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-3">
+                                Âge des enfants
+                            </label>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach($allCategories as $categorie)
+                                <button
+                                    wire:click="toggleCategorie({{ $categorie->idCategorie }})"
+                                    type="button"
+                                    class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border {{ in_array($categorie->idCategorie, $selectedCategories) ? 'bg-[#B82E6E] text-white border-[#B82E6E] shadow-sm' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50' }}"
+                                >
+                                    {{ $categorie->categorie }}
+                                </button>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- Expériences besoins spéciaux -->
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-3">
+                                Expérience besoins spéciaux
+                            </label>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach($allExperiences as $experience)
+                                <button
+                                    wire:click="toggleExperience({{ $experience->idExperience }})"
+                                    type="button"
+                                    class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border {{ in_array($experience->idExperience, $selectedExperiences) ? 'bg-[#B82E6E] text-white border-[#B82E6E] shadow-sm' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50' }}"
+                                >
+                                    {{ $experience->experience }}
+                                </button>
+                                @endforeach
+                            </div>
+                        </div>
+
                         <!-- Expérience -->
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">
@@ -179,6 +251,24 @@
                                     <option value="1">1 an minimum</option>
                                     <option value="3">3 ans minimum</option>
                                     <option value="5">5 ans minimum</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Préférence domicile -->
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">
+                                Lieu de garde
+                            </label>
+                            <div class="relative">
+                                <select wire:model.live="preference_domicile" class="w-full pl-4 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#B82E6E]/20 focus:border-[#B82E6E] appearance-none cursor-pointer transition-all hover:bg-white">
+                                    <option value="">Peu importe</option>
+                                    <option value="domicil_babysitter">Chez la babysitter</option>
+                                    <option value="domicil_client">Chez le client</option>
+                                    <option value="les_deux">Les deux</option>
                                 </select>
                                 <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -204,13 +294,13 @@
                     @php
                         $utilisateur = $babysitter->intervenant->utilisateur;
                         $localisation = $utilisateur->localisations()->first();
-                        $services = $babysitter->superpourvoirs;
+                        $services = $babysitter->superpouvoirs;
                     @endphp
                     <div class="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-1">
                         <!-- Card Header / Image -->
                         <div class="relative h-48 overflow-hidden bg-gray-100">
-                            <img
-                                src="{{ $utilisateur->photo ?? 'https://ui-avatars.com/api/?name='.urlencode($utilisateur->prenom.' '.$utilisateur->nom).'&background=random' }}"
+                           <img
+                                src="{{ $utilisateur->photo ? asset('storage/' . $utilisateur->photo) : 'https://ui-avatars.com/api/?name='.urlencode($utilisateur->prenom.' '.$utilisateur->nom).'&background=random' }}"
                                 alt="{{ $utilisateur->prenom }}"
                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />

@@ -25,7 +25,7 @@ Route::get('/connexion', LoginPage::class);
 Route::get('/inscription', Register::class);
 Route::get('/inscriptionIntervenant', RegisterIntervenantPage::class);
 Route::get('/inscriptionClient', RegisterClientPage::class);
-Route::get('/liste-babysitter', ListeBabysitter::class);
+Route::get('/liste-babysitter', ListeBabysitter::class)->name('liste.babysitter');
 Route::get('/babysitter-profile/{id}', BabysitterProfilePage::class);
 Route::get('/babysitter-booking/{id}', BabysitterBooking::class);
 // Client registration POST route
