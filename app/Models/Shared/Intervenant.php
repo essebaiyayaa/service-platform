@@ -17,7 +17,12 @@ class Intervenant extends Model
 
     public function user()
     {
-        return $this->belongsTo(Utilisateur::class, 'idIntervenant', 'idUser');
+        return $this->belongsTo(Utilisateur::class, 'IdIntervenant', 'idUser');
+    }
+
+    public function utilisateur()
+    {
+        return $this->belongsTo(Utilisateur::class, 'IdIntervenant', 'idUser');
     }
 
     public function admin()
