@@ -10,6 +10,8 @@ use App\Models\Babysitting\ExperienceBesoinSpeciaux;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+use Illuminate\Support\Facades\DB;
+
 class ListeBabysitter extends Component
 {
     use WithPagination;
@@ -28,6 +30,8 @@ class ListeBabysitter extends Component
     public $selectedFormations = []; // Nouveau filtre
     public $selectedCategories = []; // Nouveau filtre
     public $selectedExperiences = []; // Nouveau filtre
+    public $babysittersWithLocation = [];
+    public $showMap = false;
 
     protected $queryString = ['search', 'priceMin', 'priceMax', 'ville', 'experience'];
 
@@ -151,6 +155,11 @@ class ListeBabysitter extends Component
         $this->resetPage();
     }
 
+    public function toggleMap()
+    {
+        $this->showMap = !$this->showMap;
+    }
+
     public function render()
     {
         $query = Babysitter::with([
@@ -257,6 +266,24 @@ class ListeBabysitter extends Component
 
         $babysitters = $query->paginate(15);
 
+        // Récupérer les babysitters avec localisation pour la carte
+        $locationData = DB::table('babysitters')
+            ->join('intervenants', 'babysitters.idBabysitter', '=', 'intervenants.IdIntervenant')
+            ->join('utilisateurs', 'intervenants.IdIntervenant', '=', 'utilisateurs.idUser')
+            ->leftJoin('localisations', 'utilisateurs.idUser', '=', 'localisations.idUser')
+            ->where('intervenants.statut', 'VALIDE')
+            ->select('babysitters.idBabysitter', 'utilisateurs.prenom', 'utilisateurs.nom', 
+                     'localisations.latitude', 'localisations.longitude', 'localisations.ville', 
+                     'babysitters.prixHeure', 'utilisateurs.photo', 'utilisateurs.note')
+            ->get();
+
+        $this->babysittersWithLocation = $locationData->filter(function($babysitter) {
+            return $babysitter->latitude && $babysitter->longitude;
+        });
+
+        // Debug: Vérifier combien ont des coordonnées
+        \Log::info('Babysitters avec coordonnées: ' . $this->babysittersWithLocation->count());
+
         // Récupérer tous les services pour le filtre
         $allServices = Superpouvoir::all();
         $allFormations = Formation::all();
@@ -277,6 +304,7 @@ class ListeBabysitter extends Component
             'allExperiences' => $allExperiences,
             'villes' => $villes,
             'totalBabysitters' => $totalBabysitters,
+            'babysittersWithLocation' => $this->babysittersWithLocation,
         ]);
     }
 }

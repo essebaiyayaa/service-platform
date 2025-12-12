@@ -1,163 +1,6 @@
 @php
-// Tous les babysitters disponibles
-$allBabysitters = [
-    1 => [
-        'id' => 1,
-        'nom' => 'Alami',
-        'prenom' => 'Fatima',
-        'age' => 32,
-        'photo' => 'https://images.unsplash.com/photo-1675526607070-f5cbd71dde92?w=400',
-        'rating' => 4.9,
-        'reviewCount' => 120,
-        'prixHoraire' => 60,
-        'ville' => 'Casablanca',
-        'quartier' => 'Maârif',
-        'experience' => 8,
-        'verified' => true,
-        'fumeur' => false,
-        'permis' => true,
-        'mobilite' => true,
-        'aDesEnfants' => true,
-        'langues' => ['Arabe', 'Français'],
-        'description' => 'Expérimentée et passionnée, je prends soin des enfants depuis 8 ans. Je crée un environnement sûr et stimulant pour leur développement. Formée aux premiers secours et diplômée en éducation de la petite enfance.',
-        'certifications' => [
-            ['nom' => 'Diplôme en Éducation de la Petite Enfance', 'annee' => '2016', 'organisme' => 'Institut Supérieur de Casablanca'],
-            ['nom' => 'Formation Premiers Secours Pédiatriques', 'annee' => '2018', 'organisme' => 'Croissant Rouge Marocain']
-        ],
-        'services' => ['Cuisine', 'Aide aux devoirs'],
-        'superpouvoirs' => ['Faire la lecture', 'Jeux créatifs', 'Dessin'],
-        'availability' => [
-            'lundi' => ['09:00-12:00', '14:00-18:00'], 'mardi' => ['09:00-12:00', '14:00-18:00'],
-            'mercredi' => ['14:00-18:00'], 'jeudi' => ['09:00-12:00', '14:00-18:00'],
-            'vendredi' => ['09:00-12:00'], 'samedi' => ['09:00-12:00', '14:00-18:00'], 'dimanche' => []
-        ]
-    ],
-    2 => [
-        'id' => 2, 'nom' => 'Bennani', 'prenom' => 'Khadija', 'age' => 28,
-        'photo' => 'https://images.unsplash.com/photo-1758525862933-73398157e165?w=400',
-        'rating' => 4.8, 'reviewCount' => 85, 'prixHoraire' => 55,
-        'ville' => 'Casablanca', 'quartier' => 'Agdal', 'experience' => 5,
-        'verified' => true, 'fumeur' => false, 'permis' => true, 'mobilite' => true, 'aDesEnfants' => false,
-        'langues' => ['Arabe', 'Français', 'Anglais'],
-        'description' => 'Passionnée par le monde de l\'enfance depuis toujours, je suis une babysitter dévouée avec 5 ans d\'expérience. J\'adore créer des activités ludiques et éducatives pour stimuler l\'imagination des enfants.',
-        'certifications' => [
-            ['nom' => 'Diplôme en Éducation de la Petite Enfance', 'annee' => '2019', 'organisme' => 'Institut Supérieur de Casablanca'],
-            ['nom' => 'Formation Premiers Secours Pédiatriques', 'annee' => '2021', 'organisme' => 'Croissant Rouge Marocain'],
-            ['nom' => 'Certificat Montessori', 'annee' => '2022', 'organisme' => 'AMI Maroc']
-        ],
-        'services' => ['Tâches ménagères', 'Aide aux devoirs'],
-        'superpouvoirs' => ['Faire la lecture', 'Musique', 'Travaux manuels'],
-        'availability' => [
-            'lundi' => ['09:00-12:00', '14:00-17:00'], 'mardi' => ['09:00-12:00', '14:00-17:00'],
-            'mercredi' => [], 'jeudi' => ['14:00-17:00', '17:00-20:00'],
-            'vendredi' => ['09:00-12:00'], 'samedi' => ['09:00-12:00', '14:00-17:00', '18:00-21:00'],
-            'dimanche' => ['18:00-21:00']
-        ]
-    ],
-    3 => [
-        'id' => 3, 'nom' => 'El Fassi', 'prenom' => 'Amina', 'age' => 35,
-        'photo' => 'https://images.unsplash.com/photo-1758600587728-9bde755354ad?w=400',
-        'rating' => 4.9, 'reviewCount' => 95, 'prixHoraire' => 65,
-        'ville' => 'Casablanca', 'quartier' => 'Anfa', 'experience' => 10,
-        'verified' => true, 'fumeur' => false, 'permis' => true, 'mobilite' => true, 'aDesEnfants' => true,
-        'langues' => ['Arabe', 'Français', 'Anglais', 'Espagnol'],
-        'description' => 'Avec 10 ans d\'expérience, je suis spécialisée dans l\'éveil musical et artistique des enfants. Je crée des activités stimulantes qui développent leur créativité et leur confiance.',
-        'certifications' => [
-            ['nom' => 'Diplôme en Éducation Musicale', 'annee' => '2014', 'organisme' => 'Conservatoire de Casablanca'],
-            ['nom' => 'Certificat Montessori', 'annee' => '2016', 'organisme' => 'AMI Maroc'],
-            ['nom' => 'Formation Premiers Secours', 'annee' => '2020', 'organisme' => 'Croissant Rouge']
-        ],
-        'services' => ['Musique', 'Jeux créatifs', 'Aide aux devoirs'],
-        'superpouvoirs' => ['Musique', 'Jeux créatifs', 'Dessin', 'Faire la lecture'],
-        'availability' => [
-            'lundi' => ['14:00-18:00'], 'mardi' => ['14:00-18:00'],
-            'mercredi' => ['09:00-12:00', '14:00-18:00'], 'jeudi' => ['14:00-18:00'],
-            'vendredi' => [], 'samedi' => ['09:00-12:00'], 'dimanche' => ['09:00-12:00']
-        ]
-    ],
-    4 => [
-        'id' => 4, 'nom' => 'Idrissi', 'prenom' => 'Salma', 'age' => 26,
-        'photo' => 'https://images.unsplash.com/photo-1676552055618-22ec8cde399a?w=400',
-        'rating' => 4.7, 'reviewCount' => 67, 'prixHoraire' => 50,
-        'ville' => 'Casablanca', 'quartier' => 'CIL', 'experience' => 4,
-        'verified' => true, 'fumeur' => false, 'permis' => false, 'mobilite' => false, 'aDesEnfants' => false,
-        'langues' => ['Arabe', 'Français'],
-        'description' => 'Jeune et dynamique, j\'apporte une énergie positive et créative dans la garde d\'enfants. Je suis particulièrement douée pour les activités artistiques et les travaux manuels.',
-        'certifications' => [
-            ['nom' => 'Diplôme en Arts Plastiques', 'annee' => '2020', 'organisme' => 'École des Beaux-Arts'],
-            ['nom' => 'Formation Garde d\'Enfants', 'annee' => '2021', 'organisme' => 'Institut de Formation']
-        ],
-        'services' => ['Dessin', 'Travaux manuels', 'Cuisine'],
-        'superpouvoirs' => ['Dessin', 'Travaux manuels', 'Jeux créatifs'],
-        'availability' => [
-            'lundi' => ['14:00-18:00'], 'mardi' => ['14:00-18:00'],
-            'mercredi' => ['09:00-12:00', '14:00-18:00'], 'jeudi' => ['14:00-18:00'],
-            'vendredi' => ['14:00-18:00'], 'samedi' => [], 'dimanche' => []
-        ]
-    ],
-    5 => [
-        'id' => 5, 'nom' => 'Tazi', 'prenom' => 'Nour', 'age' => 30,
-        'photo' => 'https://images.unsplash.com/photo-1675526607070-f5cbd71dde92?w=400',
-        'rating' => 4.8, 'reviewCount' => 102, 'prixHoraire' => 58,
-        'ville' => 'Casablanca', 'quartier' => 'Mers Sultan', 'experience' => 6,
-        'verified' => true, 'fumeur' => false, 'permis' => true, 'mobilite' => true, 'aDesEnfants' => true,
-        'langues' => ['Arabe', 'Français', 'Anglais'],
-        'description' => 'Maman de deux enfants, je comprends parfaitement les besoins des parents. Je propose un service complet incluant la garde, l\'aide aux devoirs et les tâches ménagères légères.',
-        'certifications' => [
-            ['nom' => 'Certificat en Puériculture', 'annee' => '2018', 'organisme' => 'Institut de Santé'],
-            ['nom' => 'Formation Premiers Secours', 'annee' => '2019', 'organisme' => 'Croissant Rouge']
-        ],
-        'services' => ['Cuisine', 'Tâches ménagères', 'Aide aux devoirs'],
-        'superpouvoirs' => ['Cuisine', 'Faire la lecture', 'Jeux créatifs'],
-        'availability' => [
-            'lundi' => ['09:00-12:00', '14:00-17:00'], 'mardi' => ['09:00-12:00', '14:00-17:00'],
-            'mercredi' => ['09:00-12:00'], 'jeudi' => ['09:00-12:00', '14:00-17:00'],
-            'vendredi' => ['09:00-12:00'], 'samedi' => ['09:00-12:00'], 'dimanche' => []
-        ]
-    ],
-    6 => [
-        'id' => 6, 'nom' => 'Mansouri', 'prenom' => 'Yasmine', 'age' => 29,
-        'photo' => 'https://images.unsplash.com/photo-1758525862933-73398157e165?w=400',
-        'rating' => 4.9, 'reviewCount' => 134, 'prixHoraire' => 70,
-        'ville' => 'Casablanca', 'quartier' => 'Bourgogne', 'experience' => 7,
-        'verified' => true, 'fumeur' => false, 'permis' => true, 'mobilite' => true, 'aDesEnfants' => false,
-        'langues' => ['Arabe', 'Français', 'Anglais'],
-        'description' => 'Professionnelle expérimentée avec une formation en éducation musicale. Je propose des activités enrichissantes qui allient apprentissage et plaisir pour le développement harmonieux des enfants.',
-        'certifications' => [
-            ['nom' => 'Master en Éducation', 'annee' => '2017', 'organisme' => 'Université Hassan II'],
-            ['nom' => 'Certificat en Pédagogie Musicale', 'annee' => '2018', 'organisme' => 'Conservatoire'],
-            ['nom' => 'Formation Premiers Secours', 'annee' => '2020', 'organisme' => 'Croissant Rouge']
-        ],
-        'services' => ['Aide aux devoirs', 'Musique', 'Cuisine'],
-        'superpouvoirs' => ['Musique', 'Faire la lecture', 'Aide aux devoirs', 'Jeux créatifs'],
-        'availability' => [
-            'lundi' => ['14:00-18:00'], 'mardi' => ['14:00-18:00'],
-            'mercredi' => ['09:00-12:00', '14:00-18:00'], 'jeudi' => ['14:00-18:00'],
-            'vendredi' => ['14:00-18:00'], 'samedi' => ['10:00-13:00'], 'dimanche' => []
-        ]
-    ]
-];
-
-$babysitterId = $id ?? 1;
-$babysitter = $allBabysitters[$babysitterId] ?? $allBabysitters[1];
-
-$reviews = [
-    ['id' => 1, 'author' => 'Amina T.', 'avatar' => 'https://images.unsplash.com/photo-1588495644868-1416d25d8b33?w=100',
-     'rating' => 5, 'date' => 'Il y a 2 semaines',
-     'comment' => $babysitter['prenom'] . ' est exceptionnelle ! Mes enfants l\'adorent et elle est toujours ponctuelle. Je la recommande vivement.',
-     'tags' => ['Ponctuelle', 'Douce avec les enfants']],
-    ['id' => 2, 'author' => 'Leila M.', 'avatar' => 'https://images.unsplash.com/photo-1696804218747-5c6ce0ec0739?w=100',
-     'rating' => 5, 'date' => 'Il y a 1 mois',
-     'comment' => 'Très professionnelle et attentionnée. Elle a su gérer mon fils de 3 ans avec brio. Merci ' . $babysitter['prenom'] . ' !',
-     'tags' => ['Professionnelle', 'Patiente']],
-    ['id' => 3, 'author' => 'Sara E.', 'avatar' => 'https://images.unsplash.com/photo-1675526607070-f5cbd71dde92?w=100',
-     'rating' => 5, 'date' => 'Il y a 2 mois',
-     'comment' => 'Excellente babysitter, je fais totalement confiance à ' . $babysitter['prenom'] . ' avec mes enfants.',
-     'tags' => ['Fiable', 'Créative']]
-];
-
-$dayNames = ['lundi' => 'Lundi', 'mardi' => 'Mardi', 'mercredi' => 'Mercredi', 'jeudi' => 'Jeudi',
-             'vendredi' => 'Vendredi', 'samedi' => 'Samedi', 'dimanche' => 'Dimanche'];
+$dayNames = ['Lundi' => 'Lundi', 'Mardi' => 'Mardi', 'Mercredi' => 'Mercredi', 'Jeudi' => 'Jeudi',
+             'Vendredi' => 'Vendredi', 'Samedi' => 'Samedi', 'Dimanche' => 'Dimanche'];
 @endphp
 
 <div class="min-h-screen bg-[#F7F7F7]">
@@ -177,7 +20,7 @@ $dayNames = ['lundi' => 'Lundi', 'mardi' => 'Mardi', 'mercredi' => 'Mercredi', '
             <div class="flex items-start gap-8">
                 <div class="relative flex-shrink-0">
                     <div class="w-40 h-40 rounded-3xl overflow-hidden border-4 border-white" style="box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15)">
-                        <img src="{{ $babysitter['photo'] }}" alt="{{ $babysitter['prenom'] }} {{ $babysitter['nom'] }}" class="w-full h-full object-cover" />
+                        <img src="{{ $babysitter->photo ? '/storage/' . $babysitter->photo : 'https://ui-avatars.com/api/?name=' . urlencode($babysitter->prenom . ' ' . $babysitter->nom) . '&background=random' }}" alt="{{ $babysitter->prenom }} {{ $babysitter->nom }}" class="w-full h-full object-cover" />
                     </div>
                 </div>
 
@@ -389,15 +232,14 @@ $dayNames = ['lundi' => 'Lundi', 'mardi' => 'Mardi', 'mercredi' => 'Mercredi', '
                 <div class="bg-white rounded-2xl p-6 border border-gray-100" style="box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06)">
                     <h2 class="text-xl mb-6 text-black font-extrabold">Caractéristiques</h2>
                     <div class="space-y-3">
-                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-xl">
-                            <div class="flex items-center gap-2">
-                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ $babysitter->prenom }} {{ substr($babysitter->nom, 0, 1) }}.</h1>
+                            <p class="text-gray-600 flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                 </svg>
-                                <span class="text-[#0a0a0a] font-semibold">Vérifié</span>
-                            </div>
-                            <span class="px-3 py-1 bg-green-600 text-white rounded-lg text-sm font-bold">Oui</span>
-                        </div>
+                                {{ $babysitter->ville ?? 'Ville non spécifiée' }}
+                            </p>
                         <div class="flex items-center justify-between p-3 bg-[#F7F7F7] rounded-xl">
                             <div class="flex items-center gap-2">
                                 <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -439,4 +281,54 @@ $dayNames = ['lundi' => 'Lundi', 'mardi' => 'Mardi', 'mercredi' => 'Mercredi', '
             </div>
         </div>
     </div>
+
+    <!-- Map Section -->
+    @if($localisation['latitude'] && $localisation['longitude'])
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div class="p-4 bg-[#B82E6E] text-white">
+                    <h3 class="font-bold">Localisation</h3>
+                </div>
+                <div id="location-map" style="height: 300px; width: 100%;"></div>
+                <div class="p-4">
+                    <p class="text-sm text-gray-700">
+                        <svg class="w-4 h-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        </svg>
+                        <strong>{{ $localisation['ville'] }}, Maroc</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @push('styles')
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+              integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+              crossorigin=""/>
+    @endpush
+
+    @push('scripts')
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+                integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+                crossorigin=""></script>
+        
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const lat = {{ $localisation['latitude'] }};
+                const lng = {{ $localisation['longitude'] }};
+                
+                const map = L.map('location-map').setView([lat, lng], 13);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+                
+                L.marker([lat, lng]).addTo(map)
+                    .bindPopup('<strong>{{ $babysitter->prenom }} {{ $babysitter->nom }}</strong>');
+                
+                setTimeout(() => map.invalidateSize(), 200);
+            });
+        </script>
+    @endpush
 </div>

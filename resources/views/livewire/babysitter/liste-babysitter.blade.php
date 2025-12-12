@@ -28,8 +28,8 @@
                     </p>
                 </div>
                 
-                <!-- Search Bar -->
-                <div class="w-full md:w-auto md:min-w-[400px]">
+                <!-- Search Bar and Toggle -->
+                <div class="w-full md:w-auto md:min-w-[400px] flex flex-col gap-4">
                     <div class="relative group">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <svg class="h-5 w-5 text-gray-400 group-focus-within:text-[#B82E6E] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -45,6 +45,26 @@
                         <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
                             <div wire:loading wire:target="search" class="animate-spin rounded-full h-5 w-5 border-b-2 border-[#B82E6E]"></div>
                         </div>
+                    </div>
+                    
+                    <!-- Toggle Map/List Button -->
+                    <div class="flex justify-center md:justify-end">
+                        <button
+                            wire:click="toggleMap"
+                            class="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all {{ $showMap ? 'bg-[#B82E6E] text-white' : 'bg-white text-[#B82E6E] border border-[#B82E6E]' }}"
+                        >
+                            @if($showMap)
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                            </svg>
+                            Liste
+                            @else
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                            </svg>
+                            Carte
+                            @endif
+                        </button>
                     </div>
                 </div>
             </div>
@@ -65,6 +85,27 @@
     </div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Map Section -->
+        @if($showMap && $babysittersWithLocation->count() > 0)
+        <div class="mb-8">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="p-4 bg-[#B82E6E] text-white">
+                    <h3 class="font-bold flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                        </svg>
+                        Carte des babysitters disponibles
+                    </h3>
+                </div>
+                <div id="babysitters-map" style="height: 400px; width: 100%;"></div>
+                <script>
+                    initializeMap(@json($babysittersWithLocation));
+                </script>
+            </div>
+        </div>
+        @endif
+
+        @if(!$showMap)
         <div class="flex flex-col lg:flex-row gap-8">
             <!-- Filters Sidebar -->
             <aside class="hidden lg:block w-80 flex-shrink-0" id="filtersSidebar">
@@ -375,14 +416,11 @@
                     </div>
                     @endforelse
                 </div>
-
-                <!-- Pagination -->
-                <div class="mt-10">
-                    {{ $babysitters->links() }}
-                </div>
             </div>
         </div>
     </div>
+
+    @endif
 
     <!-- Mobile Sidebar Overlay -->
     <div id="mobileSidebar" class="fixed inset-0 z-40 hidden lg:hidden">
@@ -403,32 +441,86 @@
         </div>
     </div>
 
-    <script>
-        function toggleFilters() {
-            const sidebar = document.getElementById('filtersSidebar');
-            const overlay = document.getElementById('mobileSidebar'); // We might not need this if we just toggle classes on the main sidebar
-            
-            // Simple toggle for mobile visibility
-            if (sidebar.classList.contains('hidden')) {
-                sidebar.classList.remove('hidden');
-                sidebar.classList.add('fixed', 'inset-0', 'z-50', 'w-full', 'h-full', 'bg-white', 'p-4', 'overflow-y-auto');
-                // Add a close button dynamically if not present
-                if (!document.getElementById('closeFiltersBtn')) {
-                    const closeBtn = document.createElement('button');
-                    closeBtn.id = 'closeFiltersBtn';
-                    closeBtn.innerHTML = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
-                    closeBtn.className = 'absolute top-4 right-4 p-2 text-gray-500';
-                    closeBtn.onclick = toggleFilters;
-                    sidebar.prepend(closeBtn);
+    @push('styles')
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+          crossorigin=""/>
+@endpush
+
+@push('scripts')
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+        
+        <script>
+            let mapInstance = null;
+            let markersLayer = null;
+
+            function destroyMap() {
+                if (mapInstance) {
+                    mapInstance.remove();
+                    mapInstance = null;
+                    markersLayer = null;
                 }
-            } else {
-                sidebar.classList.add('hidden');
-                sidebar.classList.remove('fixed', 'inset-0', 'z-50', 'w-full', 'h-full', 'bg-white', 'p-4', 'overflow-y-auto');
-                const closeBtn = document.getElementById('closeFiltersBtn');
-                if (closeBtn) closeBtn.remove();
             }
-        }
-    </script>
+
+            function initializeMap(babysitters) {
+                const mapElement = document.getElementById('babysitters-map');
+                if (!mapElement) return;
+
+                if (babysitters.length === 0) {
+                    mapElement.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 400px; color: #666;">Aucun babysitter avec localisation</div>';
+                    return;
+                }
+
+                destroyMap();
+
+                mapInstance = L.map('babysitters-map').setView([33.5731, -7.5898], 10);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(mapInstance);
+
+                babysitters.forEach((babysitter) => {
+                    const marker = L.marker([babysitter.latitude, babysitter.longitude]).addTo(mapInstance);
+                    
+                    const popupContent = `
+                        <div style="padding: 8px; text-align: center;">
+                            <h4 style="margin: 0 0 8px 0;">${babysitter.prenom} ${babysitter.nom}</h4>
+                            <p style="margin: 4px 0; color: #666;">${babysitter.ville}</p>
+                            <p style="margin: 4px 0; font-weight: bold; color: #B82E6E;">${babysitter.prixHeure} DH/h</p>
+                            <a href="/babysitter-profile/${babysitter.idBabysitter}" style="color: #B82E6E; text-decoration: none;">Voir profil</a>
+                        </div>`;
+                    
+                    marker.bindPopup(popupContent);
+                });
+            }
+
+           
+            
+            function toggleFilters() {
+                const sidebar = document.getElementById('filtersSidebar');
+                
+                if (sidebar.classList.contains('hidden')) {
+                    sidebar.classList.remove('hidden');
+                    sidebar.classList.add('fixed', 'inset-0', 'z-50', 'w-full', 'h-full', 'bg-white', 'p-4', 'overflow-y-auto');
+                    if (!document.getElementById('closeFiltersBtn')) {
+                        const closeBtn = document.createElement('button');
+                        closeBtn.id = 'closeFiltersBtn';
+                        closeBtn.innerHTML = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+                        closeBtn.className = 'absolute top-4 right-4 p-2 text-gray-500';
+                        closeBtn.onclick = toggleFilters;
+                        sidebar.prepend(closeBtn);
+                    }
+                } else {
+                    sidebar.classList.add('hidden');
+                    sidebar.classList.remove('fixed', 'inset-0', 'z-50', 'w-full', 'h-full', 'bg-white', 'p-4', 'overflow-y-auto');
+                    const closeBtn = document.getElementById('closeFiltersBtn');
+                    if (closeBtn) closeBtn.remove();
+                }
+            }
+        </script>
+     @endpush
     
     <style>
         .custom-scrollbar::-webkit-scrollbar {
