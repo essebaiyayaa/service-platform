@@ -265,7 +265,15 @@ class ListeBabysitter extends Component
             });
         }
 
+        // Debug: Vérifier la requête avant exécution
+        \Log::info('Requête babysitters: ' . $query->toSql());
+        \Log::info('Bindings: ' . json_encode($query->getBindings()));
+        
         $babysitters = $query->paginate(15);
+        
+        // Debug: Vérifier les résultats
+        \Log::info('Nombre de babysitters paginés: ' . $babysitters->count());
+        \Log::info('Total babysitters: ' . $babysitters->total());
 
         // Récupérer les babysitters avec localisation pour la carte
         $locationData = DB::table('babysitters')

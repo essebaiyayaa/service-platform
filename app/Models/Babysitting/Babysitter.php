@@ -233,10 +233,10 @@ class Babysitter extends Model
         };
     }
 
-    public function disponibilites()
-    {
-        return $this->hasMany(Disponibilite::class, 'idIntervenant', 'idBabysitter');
-    }
+    // public function disponibilites()
+    // {
+    //     return $this->hasMany(Disponibilite::class, 'idIntervenant', 'idBabysitter');
+    // }
 
     
     

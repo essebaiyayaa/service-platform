@@ -407,7 +407,7 @@
     </div>
 
     <!-- Map Section -->
-    @if($localisation['latitude'] && $localisation['longitude'])
+    @if($address && $address->latitude && $address->longitude)
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
                 <div class="p-4 bg-[#B82E6E] text-white">
