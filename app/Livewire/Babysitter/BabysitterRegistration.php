@@ -268,7 +268,7 @@ class BabysitterRegistration extends Component
                 'latitude' => $this->latitude ?? 0,
                 'longitude' => $this->longitude ?? 0,
                 'ville' => $this->ville ?? '',
-                'adresse' => $this->adresse,
+                'adresse' => $this->adresse ?? ($this->ville ?? 'Adresse non spécifiée'),
             ]);
 
             // 4. Créer l'intervenant
