@@ -11,6 +11,7 @@ use App\Livewire\Tutoring\ProfessorsList;
 use App\Livewire\Shared\RegisterClientPage;
 use App\Livewire\Shared\RegisterIntervenantPage;
 use App\Livewire\PetKeeping\SearchService as PetKeepingService;
+use App\Livewire\PetKeeping\PetKeeperRegistration;
 
 use App\Livewire\Tutoring\Dashboard;
 use App\Livewire\Shared\IntervenantHub;
@@ -34,6 +35,10 @@ Route::get('/inscriptionProfesseur', \App\Livewire\Tutoring\RegisterProfesseur::
 
 Route::prefix('pet-keeping')->group(function (){
     Route::get('search-service', PetKeepingService::class);
+});
+
+Route::prefix('pet-keeper')->group(function(){
+    Route::get('inscription', PetKeeperRegistration::class);
 });
 
 //Route::middleware(['auth'])->group(function () {
