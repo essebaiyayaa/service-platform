@@ -21,6 +21,7 @@ class ListeBabysitter extends Component
     public $permis_conduire = false;
     public $selectedServices = [];
     public $babysittersWithLocation = [];
+    public $showMap = false;
 
     protected $queryString = ['search', 'priceMin', 'priceMax', 'ville', 'experience'];
 
@@ -177,6 +178,35 @@ class ListeBabysitter extends Component
 
         // Compter le nombre total de babysitters disponibles
         $totalBabysitters = Babysitter::count();
+        // Préparer les données réelles pour la carte avec coordonnées par défaut
+$defaultCoords = [
+    'Casablanca' => [33.5731, -7.5898],
+    'Rabat' => [34.0209, -6.8416],
+    'Marrakech' => [31.6295, -7.9811],
+    'Tanger' => [35.7595, -5.8340],
+    'Fes' => [33.9716, -4.9975],
+    'Agadir' => [30.4278, -9.5981],
+    'default' => [33.5731, -7.5898]
+];
+
+// Limiter à 50 babysitters maximum pour la carte pour éviter la surcharge
+$limitedLocationData = $locationData->take(50);
+
+$babysittersMap = $limitedLocationData->map(function($babysitter) use ($defaultCoords) {
+    $coords = $defaultCoords[$babysitter->ville] ?? $defaultCoords['default'];
+    
+    return [
+        'idBabysitter' => $babysitter->idBabysitter,
+        'prenom' => $babysitter->prenom,
+        'nom' => $babysitter->nom,
+        'photo' => $babysitter->photo,
+        'note' => (float) ($babysitter->note ?? 0),
+        'ville' => $babysitter->ville,
+        'latitude' => !empty($babysitter->latitude) ? (float) $babysitter->latitude : $coords[0],
+        'longitude' => !empty($babysitter->longitude) ? (float) $babysitter->longitude : $coords[1],
+        'prixHeure' => (float) $babysitter->prixHeure
+    ];
+})->toArray();
 
         return view('livewire.babysitter.liste-babysitter', [
             'babysitters' => $babysitters,
@@ -184,6 +214,11 @@ class ListeBabysitter extends Component
             'villes' => $villes,
             'totalBabysitters' => $totalBabysitters,
             'babysittersWithLocation' => $this->babysittersWithLocation,
+            'babysittersMap' => $babysittersMap,
         ]);
     }
+    public function toggleMap()
+{
+    $this->showMap = !$this->showMap;
+}
 }

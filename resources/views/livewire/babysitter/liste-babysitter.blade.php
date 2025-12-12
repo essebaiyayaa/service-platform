@@ -49,7 +49,30 @@
                 </div>
             </div>
             
-            <!-- Mobile Filter Toggle -->
+            <!-- Toggle List/Map Button -->
+            @if(count($babysittersMap) > 0)
+            <div class="flex justify-center mb-6">
+                <button
+                    wire:click="toggleMap"
+                    class="inline-flex items-center gap-2 px-6 py-3 bg-white border-2 border-[#B82E6E] text-[#B82E6E] font-bold rounded-xl hover:bg-[#B82E6E] hover:text-white transition-all shadow-sm"
+                >
+                    @if($showMap)
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                        </svg>
+                        Voir la liste
+                    @else
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                        </svg>
+                        Voir la carte
+                    @endif
+                </button>
+            </div>
+            @endif
+            
+            <!-- Mobile Filter Toggle (Only in List Mode) -->
+            @if(!$showMap)
             <div class="md:hidden">
                 <button
                     onclick="toggleFilters()"
@@ -61,27 +84,29 @@
                     Filtres avancés
                 </button>
             </div>
+            @endif
         </div>
     </div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Map Section -->
-        @if($babysittersWithLocation->count() > 0)
-        <div class="mb-8">
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="p-4 bg-[#B82E6E] text-white">
-                    <h3 class="font-bold flex items-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
-                        </svg>
-                        Carte des babysitters disponibles
-                    </h3>
-                </div>
-                <div id="babysitters-map" style="height: 400px; width: 100%;"></div>
+        
+        <!-- MAP VIEW -->
+        @if($showMap && count($babysittersMap) > 0)
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="p-4 bg-gradient-to-r from-[#B82E6E] to-[#D94686] text-white">
+                <h3 class="font-bold flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Carte des babysitters ({{ count($babysittersMap) }} profils)
+                </h3>
             </div>
+            <div id="babysitters-map" style="height: 600px; width: 100%;"></div>
         </div>
-        @endif
-
+        
+        <!-- LIST VIEW -->
+        @elseif(!$showMap)
         <div class="flex flex-col lg:flex-row gap-8">
             <!-- Filters Sidebar -->
             <aside class="hidden lg:block w-80 flex-shrink-0" id="filtersSidebar">
@@ -221,7 +246,6 @@
                     @php
                         $utilisateur = $babysitter->intervenant->utilisateur;
                         $localisation = $utilisateur->localisations()->first();
-                        $services = $babysitter->superpourvoirs;
                     @endphp
                     <div class="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-1">
                         <!-- Card Header / Image -->
@@ -309,118 +333,13 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Mobile Sidebar Overlay -->
-    <div id="mobileSidebar" class="fixed inset-0 z-40 hidden lg:hidden">
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onclick="toggleFilters()"></div>
-        <div class="absolute right-0 top-0 bottom-0 w-80 bg-white shadow-2xl transform transition-transform duration-300 overflow-y-auto">
-            <div class="p-6">
-                <div class="flex items-center justify-between mb-8">
-                    <h3 class="text-xl font-bold text-gray-900">Filtres</h3>
-                    <button onclick="toggleFilters()" class="p-2 -mr-2 text-gray-500 hover:text-gray-700">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
-                </div>
-                <!-- Mobile Filters Content (Clone of Desktop) -->
-                <!-- Note: In a real app, we'd extract this to a component to avoid duplication. For now, we'll just rely on the desktop sidebar being hidden and this one being shown when toggled. 
-                     Actually, to avoid ID conflicts and state issues, it's better to just style the main sidebar to be fixed on mobile.
-                -->
-            </div>
-        </div>
+        @endif
     </div>
 
     @push('styles')
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
           crossorigin=""/>
-@endpush
-
-@push('scripts')
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-            crossorigin=""></script>
-        
-        <script>
-            let mapInstance = null;
-            let markersLayer = null;
-
-            function destroyMap() {
-                if (mapInstance) {
-                    mapInstance.remove();
-                    mapInstance = null;
-                    markersLayer = null;
-                }
-            }
-
-            function initializeMap(babysitters) {
-                const mapElement = document.getElementById('babysitters-map');
-                if (!mapElement) return;
-
-                if (babysitters.length === 0) {
-                    mapElement.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 400px; color: #666;">Aucun babysitter avec localisation</div>';
-                    return;
-                }
-
-                destroyMap();
-
-                mapInstance = L.map('babysitters-map').setView([33.5731, -7.5898], 10);
-                
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap contributors'
-                }).addTo(mapInstance);
-
-                babysitters.forEach((babysitter) => {
-                    const marker = L.marker([babysitter.latitude, babysitter.longitude]).addTo(mapInstance);
-                    
-                    const popupContent = `
-                        <div style="padding: 8px; text-align: center;">
-                            <h4 style="margin: 0 0 8px 0;">${babysitter.prenom} ${babysitter.nom}</h4>
-                            <p style="margin: 4px 0; color: #666;">${babysitter.ville}</p>
-                            <p style="margin: 4px 0; font-weight: bold; color: #B82E6E;">${babysitter.prixHeure} DH/h</p>
-                            <a href="/babysitter-profile/${babysitter.idBabysitter}" style="color: #B82E6E; text-decoration: none;">Voir profil</a>
-                        </div>`;
-                    
-                    marker.bindPopup(popupContent);
-                });
-            }
-
-            document.addEventListener('DOMContentLoaded', function() {
-                @if($babysittersWithLocation->count() > 0)
-                    const babysittersData = @json($babysittersWithLocation);
-                    initializeMap(babysittersData);
-                @else
-                    const mapElement = document.getElementById('babysitters-map');
-                    if (mapElement) {
-                        mapElement.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 400px; color: #666;">Aucun babysitter avec localisation</div>';
-                    }
-                @endif
-            });
-            
-            function toggleFilters() {
-                const sidebar = document.getElementById('filtersSidebar');
-                
-                if (sidebar.classList.contains('hidden')) {
-                    sidebar.classList.remove('hidden');
-                    sidebar.classList.add('fixed', 'inset-0', 'z-50', 'w-full', 'h-full', 'bg-white', 'p-4', 'overflow-y-auto');
-                    if (!document.getElementById('closeFiltersBtn')) {
-                        const closeBtn = document.createElement('button');
-                        closeBtn.id = 'closeFiltersBtn';
-                        closeBtn.innerHTML = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
-                        closeBtn.className = 'absolute top-4 right-4 p-2 text-gray-500';
-                        closeBtn.onclick = toggleFilters;
-                        sidebar.prepend(closeBtn);
-                    }
-                } else {
-                    sidebar.classList.add('hidden');
-                    sidebar.classList.remove('fixed', 'inset-0', 'z-50', 'w-full', 'h-full', 'bg-white', 'p-4', 'overflow-y-auto');
-                    const closeBtn = document.getElementById('closeFiltersBtn');
-                    if (closeBtn) closeBtn.remove();
-                }
-            }
-        </script>
-     @endpush
-    
     <style>
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
@@ -436,4 +355,116 @@
             background-color: #d1d5db;
         }
     </style>
+    @endpush
+
+    @push('scripts')
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+        
+    <script>
+        let mapInstance = null;
+
+        function destroyMap() {
+            if (mapInstance) {
+                mapInstance.remove();
+                mapInstance = null;
+            }
+        }
+
+        function initializeMap(babysitters) {
+            console.log('initializeMap appelé avec:', babysitters.length, 'babysitters');
+            console.log('Données babysitters:', babysitters);
+            
+            const mapElement = document.getElementById('babysitters-map');
+            if (!mapElement) {
+                console.log('Élément map non trouvé');
+                return;
+            }
+
+            if (babysitters.length === 0) {
+                console.log('Aucun babysitter à afficher');
+                mapElement.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 600px; color: #666;">Aucun babysitter avec localisation</div>';
+                return;
+            }
+
+            destroyMap();
+
+            // Utiliser Casablanca comme centre par défaut
+            mapInstance = L.map('babysitters-map').setView([33.5731, -7.5898], 10);
+            console.log('Carte initialisée');
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(mapInstance);
+
+            // Ajouter les marqueurs
+            babysitters.forEach((babysitter, index) => {
+                console.log(`Création marqueur ${index + 1}:`, babysitter);
+                
+                // Marqueur simple sans icône personnalisée
+                const marker = L.marker([babysitter.latitude, babysitter.longitude]).addTo(mapInstance);
+                
+                console.log(`Marqueur ${index + 1} ajouté à [${babysitter.latitude}, ${babysitter.longitude}]`);
+                
+                const popupContent = `
+                    <div style="padding: 8px; text-align: center; min-width: 150px;">
+                        <h4 style="margin: 0 0 4px 0;">${babysitter.prenom} ${babysitter.nom}</h4>
+                        <p style="margin: 2px 0; color: #666; font-size: 12px;">${babysitter.ville}</p>
+                        <p style="margin: 4px 0; font-weight: bold; color: #B82E6E;">${babysitter.prixHeure} DH/h</p>
+                        <a href="/babysitter-profile/${babysitter.idBabysitter}" style="color: #B82E6E; text-decoration: none; font-size: 12px;">Voir profil</a>
+                    </div>`;
+                
+                marker.bindPopup(popupContent);
+            });
+
+            console.log('Tous les marqueurs ajoutés');
+        }
+
+        // Initialiser la carte si en mode carte
+        document.addEventListener('DOMContentLoaded', function() {
+            @if($showMap)
+                const babysittersData = @json($babysittersMap);
+                console.log('Données babysitters pour carte:', babysittersData);
+                initializeMap(babysittersData);
+            @endif
+        });
+
+        // Réinitialiser la carte lors du toggle
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('map-toggled', () => {
+                @if($showMap)
+                    const babysittersData = @json($babysittersMap);
+                    console.log('Toggle map - données:', babysittersData);
+                    initializeMap(babysittersData);
+                @else
+                    destroyMap();
+                @endif
+            });
+        });
+
+        function toggleFilters() {
+            const sidebar = document.getElementById('filtersSidebar');
+            
+            if (sidebar.classList.contains('hidden')) {
+                sidebar.classList.remove('hidden');
+                sidebar.classList.add('fixed', 'inset-0', 'z-50', 'w-full', 'h-full', 'bg-white', 'p-4', 'overflow-y-auto');
+                if (!document.getElementById('closeFiltersBtn')) {
+                    const closeBtn = document.createElement('button');
+                    closeBtn.id = 'closeFiltersBtn';
+                    closeBtn.innerHTML = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+                    closeBtn.className = 'absolute top-4 right-4 p-2 text-gray-500';
+                    closeBtn.onclick = toggleFilters;
+                    sidebar.prepend(closeBtn);
+                }
+            } else {
+                sidebar.classList.add('hidden');
+                sidebar.classList.remove('fixed', 'inset-0', 'z-50', 'w-full', 'h-full', 'bg-white', 'p-4', 'overflow-y-auto');
+                const closeBtn = document.getElementById('closeFiltersBtn');
+                if (closeBtn) closeBtn.remove();
+            }
+        }
+    </script>
+    @endpush
 </div>
