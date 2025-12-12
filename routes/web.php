@@ -22,7 +22,7 @@ use App\Livewire\PetKeeping\SearchService as PetKeepingService;
 use App\Livewire\PetKeeping\PetKeeperRegistration;
 
 
-use App\Http\Controllers\Api\Auth\LoginController;
+//use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\RegisterController;
 
 
@@ -50,7 +50,7 @@ Route::prefix('pet-keeper')->group(function(){
 });
 
 //Route::middleware(['auth'])->group(function () {
-    // Route::get('/tutoring/dashboard', Dashboard::class)->name('tutoring.dashboard');
+     Route::get('/tutoring/dashboard', Dashboard::class)->name('tutoring.dashboard');
 // Tutoring routes (client side)
 Route::get('/services/professors-list', ProfessorsList::class)->name('professors-list');
 Route::get('/professeurs/{id}', TutorDetails::class)->name('professeurs.details');

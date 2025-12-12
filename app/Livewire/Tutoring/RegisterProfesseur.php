@@ -170,7 +170,7 @@ class RegisterProfesseur extends Component
 
             // 3. Créer l'intervenant
             $intervenant = Intervenant::create([
-                'statut' => 'EN_ATTENTE',
+                'statut' => 'VALIDE',
                 'idIntervenant' => $user->idUser,
                 'idAdmin' => $admin->idAdmin,
             ]);
