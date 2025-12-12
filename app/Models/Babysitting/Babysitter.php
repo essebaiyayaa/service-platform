@@ -237,5 +237,7 @@ class Babysitter extends Model
     {
         return $this->hasMany(Disponibilite::class, 'idIntervenant', 'idBabysitter');
     }
+
+    
     
 }

@@ -138,9 +138,13 @@ class BabysitterRegistration extends Component
         if ($this->currentStep == 2) {
             $rules = [
                 'telephone' => 'required|string|max:20',
-                'adresse' => 'required|string|max:500',
                 'photo_profil' => 'nullable|image|max:5120',
             ];
+            
+            // L'adresse n'est requise que si la géolocalisation automatique n'est pas activée
+            if (!$this->auto_localisation) {
+                $rules['adresse'] = 'required|string|max:500';
+            }
         }
 
         if ($this->currentStep == 3) {
@@ -242,7 +246,7 @@ class BabysitterRegistration extends Component
             // 1. Upload photo profil
             $photoPath = null;
             if ($this->photo_profil) {
-                $photoPath = $this->photo_profil->store('babysitters/photos', 'public');
+                $photoPath = $this->photo_profil->store('images', 'public');
             }
 
             // 2. Créer l'utilisateur
@@ -264,7 +268,7 @@ class BabysitterRegistration extends Component
                 'latitude' => $this->latitude ?? 0,
                 'longitude' => $this->longitude ?? 0,
                 'ville' => $this->ville ?? '',
-                'adresse' => $this->adresse,
+                'adresse' => $this->adresse ?? ($this->ville ?? 'Adresse non spécifiée'),
             ]);
 
             // 4. Créer l'intervenant
@@ -422,7 +426,7 @@ class BabysitterRegistration extends Component
                 \Log::error('Erreur envoi email babysitter: ' . $e->getMessage());
             }
 
-            return redirect('/')->with('success', 'Votre candidature a été soumise avec succès ! Un email de confirmation vous a été envoyé.');
+            return redirect()->route('babysitter-registration-success');
 
         } catch (\Exception $e) {
             DB::rollBack();

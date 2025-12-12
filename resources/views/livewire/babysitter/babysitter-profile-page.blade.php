@@ -405,4 +405,54 @@
             </div>
         </div>
     </div>
+
+    <!-- Map Section -->
+    @if($localisation['latitude'] && $localisation['longitude'])
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div class="p-4 bg-[#B82E6E] text-white">
+                    <h3 class="font-bold">Localisation</h3>
+                </div>
+                <div id="location-map" style="height: 300px; width: 100%;"></div>
+                <div class="p-4">
+                    <p class="text-sm text-gray-700">
+                        <svg class="w-4 h-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        </svg>
+                        <strong>{{ $localisation['ville'] }}, Maroc</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @push('styles')
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+              integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+              crossorigin=""/>
+    @endpush
+
+    @push('scripts')
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+                integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+                crossorigin=""></script>
+        
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const lat = {{ $localisation['latitude'] }};
+                const lng = {{ $localisation['longitude'] }};
+                
+                const map = L.map('location-map').setView([lat, lng], 13);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+                
+                L.marker([lat, lng]).addTo(map)
+                    .bindPopup('<strong>{{ $babysitter->prenom }} {{ $babysitter->nom }}</strong>');
+                
+                setTimeout(() => map.invalidateSize(), 200);
+            });
+        </script>
+    @endpush
 </div>
