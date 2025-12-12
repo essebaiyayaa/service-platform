@@ -246,7 +246,7 @@ class BabysitterBooking extends Component
                 'id' => $babysitter->idBabysitter,
                 'nom' => $babysitter->utilisateur->nom ?? $babysitter->intervenant->nom ?? 'Nom par défaut',
                 'prenom' => $babysitter->utilisateur->prenom ?? $babysitter->intervenant->prenom ?? 'Prénom par défaut',
-                'photo' => $babysitter->utilisateur->photo ?? $babysitter->intervenant->photo ?? null,
+                'photo' => $babysitter->utilisateur->photo ? \Storage::url($babysitter->utilisateur->photo) : ($babysitter->intervenant->photo ? \Storage::url($babysitter->intervenant->photo) : null),
                 'rating' => 4.9,
                 'services' => $babysitter->superpouvoirs->isNotEmpty() 
                     ? $babysitter->superpouvoirs->pluck('superpouvoir')->toArray()
