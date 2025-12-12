@@ -426,7 +426,7 @@ class BabysitterRegistration extends Component
                 \Log::error('Erreur envoi email babysitter: ' . $e->getMessage());
             }
 
-            return redirect('/')->with('success', 'Votre candidature a été soumise avec succès ! Un email de confirmation vous a été envoyé.');
+            return redirect()->route('babysitter-registration-success');
 
         } catch (\Exception $e) {
             DB::rollBack();

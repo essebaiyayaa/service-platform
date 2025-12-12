@@ -23,6 +23,7 @@ use App\Livewire\Babysitter\ListeBabysitter;
 use App\Livewire\Babysitter\BabysitterProfilePage;
 use App\Livewire\Babysitter\BabysitterBooking;
 use App\Livewire\Babysitter\BabysitterRegistration;
+use App\Livewire\Babysitter\BabysitterRegistrationSuccess;
 
 
 Route::get('/', LandingPage::class);
@@ -40,6 +41,7 @@ Route::post('/register-client', [RegisterController::class, 'store'])->name('reg
 Route::post('/connexion', [LoginController::class, 'store'])->name('login.store');
 Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 Route::get('/inscriptionBabysitter', BabysitterRegistration::class)->name('inscription.babysitter');
+Route::get('/babysitter-registration-success', BabysitterRegistrationSuccess::class)->name('babysitter-registration-success');
 Route::get('/inscriptionProfesseur', \App\Livewire\Tutoring\RegisterProfesseur::class);
 
 Route::prefix('pet-keeping')->group(function (){

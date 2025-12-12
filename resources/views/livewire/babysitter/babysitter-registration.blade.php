@@ -1,11 +1,42 @@
-<div class="min-h-screen bg-gray-50 py-6">
-    <div class="max-w-4xl mx-auto px-4">
-        <div class="bg-white rounded-lg shadow-lg p-6">
-            <!-- En-tête -->
-            <div class="mb-6">
-                <h2 class="text-xl font-bold text-gray-900">Inscription Babysitter</h2>
-                <p class="text-gray-600 text-sm mt-1">Créez votre compte professionnel en quelques étapes</p>
+<div class="min-h-screen bg-gray-50 font-sans">
+    <!-- Header Section with Gradient like listing page -->
+    <div class="relative bg-white overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-r from-[#B82E6E]/5 to-[#B82E6E]/10 pointer-events-none"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
+            <!-- Breadcrumb -->
+            <nav class="flex items-center gap-2 mb-8 text-sm font-medium text-gray-500">
+                <a href="/" wire:navigate class="hover:text-[#B82E6E] transition-colors flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    Accueil
+                </a>
+                <span class="text-gray-300">/</span>
+                <a href="/services" wire:navigate class="hover:text-[#B82E6E] transition-colors">
+                    Services
+                </a>
+                <span class="text-gray-300">/</span>
+                <span class="text-[#B82E6E] font-bold">Devenir Babysitter</span>
+            </nav>
+
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+                <div>
+                    <h1 class="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mb-4">
+                        Devenir <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#B82E6E] to-[#D94686]">Babysitter</span>
+                    </h1>
+                    <p class="text-lg text-gray-600 max-w-2xl leading-relaxed">
+                        Rejoignez notre communauté de babysitters professionnels et trouvez des familles qui ont besoin de vos services.
+                    </p>
+                </div>
             </div>
+        </div>
+    </div>
+        
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <!-- En-tête -->
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold text-gray-900">Inscription Babysitter</h2>
+                    <p class="text-gray-600 text-sm mt-1">Créez votre compte professionnel en quelques étapes</p>
+                </div>
 
             <!-- Stepper -->
             <div class="mb-6">
@@ -157,7 +188,10 @@
                         </label>
                         <input type="tel" wire:model="telephone"
                             class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                            placeholder="0612345678">
+                            placeholder="0612345678"
+                            pattern="[0-9]+"
+                            oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                            maxlength="20">
                         @error('telephone') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
 
@@ -187,7 +221,7 @@
                             @if(!$auto_localisation) <span class="text-red-500">*</span> @endif
                         </label>
                         <input type="text" wire:model="adresse"
-                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent {{ $auto_localisation ? 'bg-gray-100' : '' }}"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent {{ $auto_localisation ? 'bg-gray-100 cursor-not-allowed' : '' }}"
                             placeholder="Rue, Ville"
                             @if($auto_localisation) disabled @endif>
                         @if(!$auto_localisation)
