@@ -131,7 +131,7 @@
         <!-- Progress Steps -->
         <div class="mb-10">
             <div class="flex items-center justify-between mb-2">
-                @foreach(['Profil', 'Contact', 'Professionnel', 'Disponibilités', 'Documents'] as $index => $step)
+                @foreach(['Profil', 'Verification de Email' ,'Contact', 'Professionnel', 'Disponibilités', 'Documents'] as $index => $step)
                     @php $stepNumber = $index + 1; @endphp
                     <div class="flex flex-col items-center flex-1 relative">
                         <button 
@@ -249,11 +249,191 @@
                     </div>
                 </div>
             @endif
+
+
+            <!-- Étape 2: Vérification d'email -->
+            @if ($currentStep === 2)
+                <div>
+                    <div class="mb-8">
+                        <h2 class="text-2xl font-semibold text-gray-900 mb-2">
+                            Vérification de votre email
+                        </h2>
+                        <p class="text-gray-600">
+                            Entrez le code à 10 chiffres envoyé à votre adresse email
+                        </p>
+                    </div>
+
+                    <div class="space-y-8">
+
+                        <!-- Information sur l'envoi -->
+                        <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+                            <div class="flex items-start">
+                                <svg class="w-6 h-6 text-blue-500 mt-0.5 mr-3 flex-shrink-0"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+
+                                <div>
+                                    <h4 class="font-semibold text-blue-900 mb-2">
+                                        Code envoyé par email
+                                    </h4>
+                                    <p class="text-blue-800">
+                                        Un code de vérification à 10 chiffres a été envoyé à
+                                        <strong class="font-semibold">
+                                            {{ e($email) }}
+                                        </strong>.
+                                        Veuillez le saisir ci-dessous pour vérifier votre adresse email.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Code de vérification -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-4">
+                                Code de vérification *
+                            </label>
+
+                            <div class="max-w-2xl mx-auto">
+                                <div class="grid grid-cols-10 gap-2 md:gap-3"
+                                    id="verification-code-container"
+                                    role="group"
+                                    aria-label="Code de vérification à 10 chiffres">
+
+                                    @for ($i = 0; $i < 10; $i++)
+                                        <input
+                                            type="text"
+                                            inputmode="numeric"
+                                            pattern="[0-9]"
+                                            maxlength="1"
+                                            autocomplete="one-time-code"
+                                            wire:model.live.debounce.300ms="verification_code.{{ $i }}"
+                                            wire:key="verification-digit-{{ $i }}"
+                                            class="w-full aspect-square text-center text-2xl font-bold border-2 border-gray-300 rounded-lg
+                                                focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-50
+                                                transition-all duration-200 hover:border-gray-400"
+                                            placeholder="•"
+                                            aria-label="Chiffre {{ $i + 1 }}"
+                                            oninput="moveFocus({{ $i }}, event)"
+                                            onkeydown="handleKeyDown({{ $i }}, event)"
+                                            onpaste="handlePaste(event)"
+                                        />
+                                    @endfor
+                                </div>
+
+                                <!-- Erreurs -->
+                                @error('verification_code')
+                                    <p class="mt-3 text-sm text-red-600">
+                                        {{ $message }}
+                                    </p>
+                                @enderror
+
+                                @if ($verification_code_incomplete)
+                                    <p class="mt-3 text-sm text-yellow-600">
+                                        Veuillez entrer les 10 chiffres du code de vérification
+                                    </p>
+                                @endif
+                            </div>
+
+                            <p class="mt-4 text-sm text-gray-500 text-center">
+                                Entrez les 10 chiffres dans l'ordre. Cliquez sur chaque case ou utilisez les touches fléchées.
+                            </p>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="border-t border-gray-200 pt-6">
+                            <div class="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+
+                                <p class="text-sm text-gray-600">
+                                    Vous n'avez pas reçu le code ?
+                                </p>
+
+                                <div class="flex space-x-3">
+
+                                    <button
+                                        type="button"
+                                        wire:click="resendVerificationCode"
+                                        wire:loading.attr="disabled"
+                                        wire:target="resendVerificationCode"
+                                        class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg
+                                            hover:bg-gray-50 transition text-sm font-medium disabled:opacity-50">
+
+                                        <span wire:loading.remove wire:target="resendVerificationCode">
+                                            <svg class="w-4 h-4 mr-2"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                                aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                            </svg>
+                                            Renvoyer le code
+                                        </span>
+
+                                        <span wire:loading wire:target="resendVerificationCode">
+                                            <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-gray-700"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                aria-hidden="true">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10"
+                                                        stroke="currentColor" stroke-width="4" />
+                                                <path class="opacity-75" fill="currentColor"
+                                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                            </svg>
+                                            Envoi en cours...
+                                        </span>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        wire:click="changeEmail"
+                                        class="inline-flex items-center px-4 py-2 border border-yellow-300 text-yellow-700 rounded-lg
+                                            hover:bg-yellow-50 transition text-sm font-medium">
+                                        <svg class="w-4 h-4 mr-2"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                            aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        </svg>
+                                        Changer d'email
+                                    </button>
+
+                                </div>
+                            </div>
+
+                            @if (session()->has('verification_code_resent'))
+                                <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                    <p class="text-sm text-green-700 flex items-center">
+                                        <svg class="w-4 h-4 mr-2 flex-shrink-0"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                            aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        {{ e(session('verification_code_resent')) }}
+                                    </p>
+                                </div>
+                            @endif
+
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             
             
 
-            <!-- Étape 2: Contact -->
-            @if($currentStep == 2)
+            <!-- Étape 3: Contact -->
+            @if($currentStep == 3)
                 <div>
                     <div class="mb-8">
                         <h2 class="text-2xl font-semibold text-gray-900 mb-2">Contact et localisation</h2>
@@ -365,8 +545,8 @@
 
 
             
-            <!-- Étape 3: Professionnel -->
-            @if($currentStep == 3)
+            <!-- Étape 4: Professionnel -->
+            @if($currentStep == 4)
                 <div>
                     <div class="mb-8">
                         <h2 class="text-2xl font-semibold text-gray-900 mb-2">Informations professionnelles</h2>
@@ -425,8 +605,8 @@
                 </div>
             @endif
             
-            <!-- Étape 4: Disponibilités -->
-            @if($currentStep == 4)
+            <!-- Étape 5: Disponibilités -->
+            @if($currentStep == 5)
                 <div>
                     <div class="mb-8">
                         <h2 class="text-2xl font-semibold text-gray-900 mb-2">Disponibilités</h2>
@@ -492,8 +672,8 @@
             @endif
             
             
-            <!-- Étape 5: Documents -->
-            @if($currentStep == 5)
+            <!-- Étape 6: Documents -->
+            @if($currentStep == 6)
                 <div>
                     <div class="mb-8">
                         <h2 class="text-2xl font-semibold text-gray-900 mb-2">Documents requis</h2>
@@ -660,11 +840,110 @@
 
 @push('scripts')
 <script>
-    document.addEventListener('livewire:initialized', () => {
-        Livewire.on('step-changed', (step) => {
+    document.addEventListener('livewire:init', () => {
+
+        Livewire.on('step-changed', () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
+
+        const getInput = (index) =>
+            document.querySelector(`input[wire\\:key="verification-digit-${index}"]`);
+
+        // Déplacer le focus automatiquement
+        window.moveFocus = function (index, event) {
+            const input = event.target;
+            const value = input.value;
+
+            // Autoriser uniquement les chiffres
+            if (!/^\d$/.test(value)) {
+                input.value = '';
+                return;
+            }
+
+            // Aller au champ suivant
+            if (index < 9) {
+                const nextInput = getInput(index + 1);
+                nextInput?.focus();
+            }
+
+            updateFullCode();
+        };
+
+        // Gestion du clavier
+        window.handleKeyDown = function (index, event) {
+            const input = event.target;
+
+            if (event.key === 'ArrowLeft' && index > 0) {
+                event.preventDefault();
+                getInput(index - 1)?.focus();
+            }
+
+            else if ((event.key === 'ArrowRight' || event.key === ' ') && index < 9) {
+                event.preventDefault();
+                getInput(index + 1)?.focus();
+            }
+
+            else if (event.key === 'Backspace') {
+                if (input.value === '' && index > 0) {
+                    event.preventDefault();
+                    const prev = getInput(index - 1);
+                    if (prev) {
+                        prev.value = '';
+                        prev.focus();
+                    }
+                }
+                setTimeout(updateFullCode, 10);
+            }
+
+            else if (event.key === 'Delete') {
+                setTimeout(updateFullCode, 10);
+            }
+        };
+
+        // Gestion du collage
+        window.handlePaste = function (event) {
+            event.preventDefault();
+
+            const digits = event.clipboardData
+                .getData('text')
+                .replace(/\D/g, '')
+                .slice(0, 10)
+                .split('');
+
+            digits.forEach((digit, index) => {
+                const input = getInput(index);
+                if (input) input.value = digit;
+            });
+
+            getInput(9)?.focus();
+            updateFullCode();
+        };
+
+        // Mise à jour du code complet
+        function updateFullCode() {
+            let fullCode = '';
+
+            for (let i = 0; i < 10; i++) {
+                const input = getInput(i);
+                if (input?.value) {
+                    fullCode += input.value;
+                }
+            }
+
+            @this.set('verification_code_full', fullCode.length === 10 ? fullCode : '');
+        }
+
+        // Reset depuis Livewire
+        Livewire.on('clear-verification-code', () => {
+            for (let i = 0; i < 10; i++) {
+                const input = getInput(i);
+                if (input) input.value = '';
+            }
+            updateFullCode();
+        });
+
     });
 </script>
 @endpush
+
 </div>

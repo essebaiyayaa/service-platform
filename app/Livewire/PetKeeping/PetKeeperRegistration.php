@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\PetKeeping\PetKeeperEmailVerification;
+
 
 class PetKeeperRegistration extends Component
 {
@@ -32,6 +35,13 @@ class PetKeeperRegistration extends Component
     public $password_confirmation;
     public $dateNaissance;
     public $telephone;
+
+    public $verification_code;
+    public $verification_code_incomplete = true;
+    public $verification_code_full;
+
+    public ?string $generated_verification_code = null;
+    public ?\Carbon\Carbon $verification_code_expires_at = null;
     
     // Étape 2: Contact
     public $adresse;
@@ -72,10 +82,91 @@ class PetKeeperRegistration extends Component
         'Vendredi', 'Samedi', 'Dimanche'
     ];
     
+
+    private function generateAndSendVerificationCode(): void
+    {
+        $code = (string) random_int(1000000000, 9999999999);
+
+        $this->generated_verification_code = Hash::make($code);
+        $this->verification_code_expires_at = now()->addMinutes(10);
+
+        Mail::to($this->email)->send(
+            new PetKeeperEmailVerification(
+                $this->email,
+                $this->prenom,
+                $this->nom,
+                $code
+            )
+        );
+    }
+
+
+    public function resendVerificationCode()
+    {
+        $this->resetErrorBag('verification_code');
+        $this->verification_code_full = null;
+
+        $this->generateAndSendVerificationCode();
+
+        session()->flash(
+            'verification_code_resent',
+            'Un nouveau code de vérification a été envoyé.'
+        );
+
+        $this->dispatch('clear-verification-code');
+    }
+
+
+    public function changeEmail()
+    {
+        $this->currentStep = 1;
+
+        $this->generated_verification_code = null;
+        $this->verification_code_expires_at = null;
+
+        $this->dispatch('step-changed', step: 1);
+    }
+
+    private function verifyEmailCode(): bool
+    {
+        if (!$this->verification_code_full || strlen($this->verification_code_full) !== 10) {
+            $this->verification_code_incomplete = true;
+            $this->addError('verification_code', 'Veuillez entrer le code complet.');
+            return false;
+        }
+
+        if (!$this->generated_verification_code ||
+            !$this->verification_code_expires_at ||
+            now()->greaterThan($this->verification_code_expires_at)) {
+
+            $this->addError('verification_code', 'Le code a expiré. Veuillez en demander un nouveau.');
+            return false;
+        }
+
+        if (!Hash::check($this->verification_code_full, $this->generated_verification_code)) {
+            $this->addError('verification_code', 'Code de vérification incorrect.');
+            return false;
+        }
+
+        $this->verification_code_incomplete = false;
+        return true;
+    }
+
     
     public function nextStep()
     {
         $this->validateCurrentStep();
+
+        
+
+        if ($this->currentStep === 2 && !$this->verifyEmailCode()) {
+            return;
+        }
+
+        if ($this->currentStep === 1) {
+            $this->generateAndSendVerificationCode();
+        }
+
         if ($this->currentStep < $this->totalSteps) {
             $this->currentStep++;
             $this->dispatch('step-changed', step: $this->currentStep);
@@ -117,21 +208,24 @@ class PetKeeperRegistration extends Component
                 'dateNaissance' => 'required|date|before:-18 years',
                 'telephone' => 'required|string|max:20',
             ],
-            2 => [
+            // 2 => [
+            //     'verification_code' => 'required|numeric|max:10',
+            // ],
+            3 => [
                 'adresse' => 'required|string|max:255',
                 'ville' => 'required|string|max:100',
                 'code_postal' => 'required|string|max:10',
                 'pays' => 'required|string|max:50',
             ],
-            3 => [
+            4 => [
                 'specialite' => 'required|string|max:255',
                 'years_experience' => 'required|integer|min:0|max:50',
                 'certifications' => 'array',
             ],
-            4 => [
+            5 => [
                 'availabilities' => 'array'
             ],
-            5 => [
+            6 => [
                 'criminal_record' => 'required|file|mimes:pdf,jpg,jpeg,png|max:15360',
                 'proof_of_address' => 'required|file|mimes:pdf,jpg,jpeg,png|max:15360',
                 'animal_certificates.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:15360',
