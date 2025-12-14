@@ -6,13 +6,9 @@ use Livewire\Component;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-<<<<<<< HEAD:app/Livewire/PetKeeping/PetKeeperDashboard.php
-use Carbon\Carbon; 
-=======
 use Carbon\Carbon;
 use App\Mail\DemandeAccepteeMail;
 use App\Mail\RefusDemandeMail; // N'oubliez pas d'importer le Mail de refus
->>>>>>> 3c89cfd (New dashboard):app/Livewire/PetKeeperDashboard.php
 
 class PetKeeperDashboard extends Component
 {

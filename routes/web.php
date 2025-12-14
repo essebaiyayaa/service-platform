@@ -1,20 +1,23 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
+// Auth Controllers
 use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\RegisterController;
 
-// Shared
+// Shared Livewire Components
 use App\Livewire\Shared\Register;
 use App\Livewire\Shared\LoginPage;
 use App\Livewire\Shared\ContactPage;
 use App\Livewire\Shared\LandingPage;
 use App\Livewire\Shared\ServicesPage;
 use App\Livewire\Shared\IntervenantHub;
+use App\Livewire\Shared\ProfilClient;
 use App\Livewire\Shared\RegisterClientPage;
 use App\Livewire\Shared\RegisterIntervenantPage;
 
-// Tutoring
+// Tutoring Livewire Components
 use App\Livewire\Tutoring\Dashboard;
 use App\Livewire\Tutoring\MesDemandes;
 use App\Livewire\Tutoring\TutorDetails;
@@ -23,19 +26,13 @@ use App\Livewire\Tutoring\DemandeDetails;
 use App\Livewire\Tutoring\ProfessorsList;
 use App\Livewire\Tutoring\RegisterProfesseur;
 
-// PetKeeping
+// PetKeeping Livewire Components
 use App\Livewire\PetKeeping\SearchService as PetKeepingService;
-
-
-use App\Livewire\Shared\RegisterClientPage;
 use App\Livewire\PetKeeping\PetkeeperBooking;
 use App\Livewire\PetKeeping\PetKeeperProfile;
 use App\Livewire\PetKeeping\PetKeeperDashboard;
-use App\Livewire\Shared\RegisterIntervenantPage;
-use App\Http\Controllers\Api\Auth\LoginController;
 use App\Livewire\PetKeeping\PetKeeperRegistration;
-// Important : Importez le nouveau composant détails
-use App\Livewire\PetKeeperMissionDetails; 
+use App\Livewire\PetKeeperMissionDetails;
 
 /*
 |--------------------------------------------------------------------------
@@ -43,54 +40,50 @@ use App\Livewire\PetKeeperMissionDetails;
 |--------------------------------------------------------------------------
 */
 
-//use App\Http\Controllers\Api\Auth\LoginController;
-use App\Http\Controllers\Api\Auth\RegisterController;
-use App\Livewire\PetKeeping\SearchService as PetKeepingService;
+// Public Routes
+Route::get('/', LandingPage::class)->name('home');
+Route::get('/services', ServicesPage::class)->name('services');
+Route::get('/contact', ContactPage::class)->name('contact');
+Route::get('/connexion', LoginPage::class)->name('login');
+Route::get('/inscription', Register::class)->name('register');
+Route::get('/inscriptionIntervenant', RegisterIntervenantPage::class)->name('register.intervenant');
+Route::get('/inscriptionClient', RegisterClientPage::class)->name('register.client');
+Route::get('/inscriptionProfesseur', RegisterProfesseur::class)->name('register.professeur');
 
-
-Route::get('/', LandingPage::class);
-Route::get('/services', ServicesPage::class);
-Route::get('/contact', ContactPage::class);
-Route::get('/connexion', LoginPage::class);
-Route::get('/inscription', Register::class);
-Route::get('/inscriptionIntervenant', RegisterIntervenantPage::class);
-Route::get('/inscriptionClient', RegisterClientPage::class);
-Route::get('/inscriptionProfesseur', RegisterProfesseur::class);
-Route::get('/profil', \App\Livewire\Shared\ProfilClient::class);
-
-// Auth POST routes
+// Auth Routes
 Route::post('/register-client', [RegisterController::class, 'store'])->name('register.store');
 Route::post('/connexion', [LoginController::class, 'store'])->name('login.store');
 Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
-// Groupe Pet Keeping (Client)
-
-Route::prefix('pet-keeping')->group(function (){
-    Route::get('search-service', PetKeepingService::class);
-    Route::get('book', PetkeeperBooking::class);
-});
-
-// Groupe Pet Keeper (Prestataire)
-Route::prefix('pet-keeper')->group(function(){
-    Route::get('inscription', PetKeeperRegistration::class);
-    Route::get('profile', PetKeeperProfile::class)->name('petkeeper.profile');
-    
-    // Le Dashboard
-    Route::get('dashboard', PetKeeperDashboard::class)->name('petkeeper.dashboard');
-    
-    // La nouvelle route pour "Consulter" (URL: /pet-keeper/mission/1)
-    Route::get('mission/{id}', PetKeeperMissionDetails::class)->name('petkeeper.mission.details');
-});
-
-// Routes protégées (Tutoring & Hub)
+// Protected Routes
 Route::middleware(['auth'])->group(function () {
+    // Profile
+    Route::get('/profil', ProfilClient::class)->name('profile');
+    
+    // Tutoring
     Route::get('/tutoring/dashboard', Dashboard::class)->name('tutoring.dashboard');
-    Route::get('/intervenant/hub', IntervenantHub::class)->name('intervenant.hub');
-    Route::get('/tutoring/demande/{id}', DemandeDetails::class)->name('tutoring.request.details');
     Route::get('/tutoring/requests', MesDemandes::class)->name('tutoring.requests');
+    Route::get('/tutoring/demande/{id}', DemandeDetails::class)->name('tutoring.request.details');
+    
+    // Intervenant Hub
+    Route::get('/intervenant/hub', IntervenantHub::class)->name('intervenant.hub');
 });
 
-// Routes publiques Tutoring
+// Public Tutoring Routes
 Route::get('/services/professors-list', ProfessorsList::class)->name('professors-list');
 Route::get('/professeurs/{id}', TutorDetails::class)->name('professeurs.details');
 Route::get('/reservation/{service}', BookingProcess::class)->name('reservation.create');
+
+// Pet Keeping Routes (Client)
+Route::prefix('pet-keeping')->name('petkeeping.')->group(function () {
+    Route::get('search-service', PetKeepingService::class)->name('search');
+    Route::get('book', PetkeeperBooking::class)->name('book');
+});
+
+// Pet Keeper Routes (Provider)
+Route::prefix('pet-keeper')->name('petkeeper.')->group(function () {
+    Route::get('inscription', PetKeeperRegistration::class)->name('inscription');
+    Route::get('profile', PetKeeperProfile::class)->name('profile');
+    Route::get('dashboard', PetKeeperDashboard::class)->name('dashboard');
+    Route::get('mission/{id}', PetKeeperMissionDetails::class)->name('mission.details');
+});
