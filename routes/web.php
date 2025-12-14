@@ -26,6 +26,7 @@ use App\Livewire\PetKeeping\PetKeeperRegistration;
 
 //use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\RegisterController;
+use App\Livewire\PetKeeping\PetKeepingServiceBooking;
 use App\Livewire\PetKeeping\SearchService as PetKeepingService;
 
 
@@ -47,7 +48,7 @@ Route::get('/inscriptionProfesseur', \App\Livewire\Tutoring\RegisterProfesseur::
 
 Route::prefix('pet-keeping')->group(function (){
     Route::get('search-service', PetKeepingService::class);
-    Route::get('book', PetkeeperBooking::class);
+    Route::get('book/{IdService}', PetKeepingServiceBooking::class)->name('pet-keeper.book');
 });
 
 Route::prefix('pet-keeper')->group(function(){
