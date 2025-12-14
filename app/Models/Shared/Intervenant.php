@@ -17,7 +17,12 @@ class Intervenant extends Model
 
     public function user()
     {
-        return $this->belongsTo(Utilisateur::class, 'idIntervenant', 'idUser');
+        return $this->belongsTo(Utilisateur::class, 'IdIntervenant', 'idUser');
+    }
+
+    public function utilisateur()
+    {
+        return $this->belongsTo(Utilisateur::class, 'IdIntervenant', 'idUser');
     }
 
     public function admin()
@@ -32,11 +37,16 @@ class Intervenant extends Model
 
     public function services()
     {
-        return $this->belongsToMany(Service::class, 'offres_services', 'idIntervenant', 'idService','IdIntervenant','idService' );
+        return $this->belongsToMany(Service::class, 'offres_services', 'idIntervenant', 'idService', 'IdIntervenant', 'idService');
     }
 
     public function disponibilites()
     {
         return $this->hasMany(Disponibilite::class, 'idIntervenant', 'idIntervenant');
+    }
+
+    public function babysitter()
+    {
+        return $this->hasOne(\App\Models\Babysitting\Babysitter::class, 'idBabysitter', 'IdIntervenant');
     }
 }
