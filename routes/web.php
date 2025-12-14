@@ -25,9 +25,14 @@ use App\Livewire\Tutoring\RegisterProfesseur;
 
 // PetKeeping
 use App\Livewire\PetKeeping\SearchService as PetKeepingService;
+
+
+use App\Livewire\Shared\RegisterClientPage;
 use App\Livewire\PetKeeping\PetkeeperBooking;
 use App\Livewire\PetKeeping\PetKeeperProfile;
 use App\Livewire\PetKeeping\PetKeeperDashboard;
+use App\Livewire\Shared\RegisterIntervenantPage;
+use App\Http\Controllers\Api\Auth\LoginController;
 use App\Livewire\PetKeeping\PetKeeperRegistration;
 // Important : Importez le nouveau composant détails
 use App\Livewire\PetKeeperMissionDetails; 
@@ -38,6 +43,11 @@ use App\Livewire\PetKeeperMissionDetails;
 |--------------------------------------------------------------------------
 */
 
+//use App\Http\Controllers\Api\Auth\LoginController;
+use App\Http\Controllers\Api\Auth\RegisterController;
+use App\Livewire\PetKeeping\SearchService as PetKeepingService;
+
+
 Route::get('/', LandingPage::class);
 Route::get('/services', ServicesPage::class);
 Route::get('/contact', ContactPage::class);
@@ -46,6 +56,7 @@ Route::get('/inscription', Register::class);
 Route::get('/inscriptionIntervenant', RegisterIntervenantPage::class);
 Route::get('/inscriptionClient', RegisterClientPage::class);
 Route::get('/inscriptionProfesseur', RegisterProfesseur::class);
+Route::get('/profil', \App\Livewire\Shared\ProfilClient::class);
 
 // Auth POST routes
 Route::post('/register-client', [RegisterController::class, 'store'])->name('register.store');
@@ -53,6 +64,7 @@ Route::post('/connexion', [LoginController::class, 'store'])->name('login.store'
 Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
 // Groupe Pet Keeping (Client)
+
 Route::prefix('pet-keeping')->group(function (){
     Route::get('search-service', PetKeepingService::class);
     Route::get('book', PetkeeperBooking::class);
