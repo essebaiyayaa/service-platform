@@ -37,7 +37,7 @@ use App\Livewire\Babysitter\BabysitterProfile;
 
 // PetKeeping Livewire Components
 use App\Livewire\PetKeeping\SearchService as PetKeepingService;
-use App\Livewire\PetKeeping\PetkeeperBooking;
+use App\Livewire\PetKeeping\PetkeepingServiceBooking;
 use App\Livewire\PetKeeping\PetKeeperProfile;
 use App\Livewire\PetKeeping\PetKeeperDashboard;
 use App\Livewire\PetKeeping\PetKeeperRegistration;
@@ -95,9 +95,9 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Pet Keeping Routes (Client)
-Route::prefix('pet-keeping')->name('petkeeping.')->group(function () {
-    Route::get('search-service', PetKeepingService::class)->name('search');
-    Route::get('book', PetkeeperBooking::class)->name('book');
+Route::prefix('pet-keeping')->group(function (){
+    Route::get('search-service', PetKeepingService::class);
+    Route::get('book/{IdService}', PetKeepingServiceBooking::class)->name('pet-keeper.book');
 });
 
 // Pet Keeper Routes (Provider)
