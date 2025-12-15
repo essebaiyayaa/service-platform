@@ -39,6 +39,7 @@ use App\Livewire\Babysitter\BabysitterRegistration;
 use App\Livewire\Babysitter\BabysitterRegistrationSuccess;
 use App\Livewire\Babysitter\BabysitterDashboard;
 use App\Livewire\Babysitter\BabysitterProfile;
+use App\Livewire\Babysitter\DisponibilitesPage;
 
 // PetKeeping Livewire Components
 use App\Livewire\PetKeeping\SearchService as PetKeepingService;
@@ -97,6 +98,9 @@ Route::post('/register-client', [RegisterController::class, 'store'])->name('reg
 Route::post('/connexion', [LoginController::class, 'store'])->name('login.store');
 Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
+// Public Routes (test sans auth)
+Route::get('/babysitter/disponibilites-test', DisponibilitesPage::class)->name('babysitter.disponibilites.test');
+
 // Protected Routes
 Route::middleware(['auth'])->group(function () {
     // Profile
@@ -118,6 +122,7 @@ Route::middleware(['auth'])->group(function () {
     // Babysitter
     Route::get('/babysitter/dashboard', BabysitterDashboard::class)->name('babysitter.dashboard');
     Route::get('/babysitter/profile', BabysitterProfile::class)->name('babysitter.profile');
+    Route::get('/babysitter/disponibilites', DisponibilitesPage::class)->name('babysitter.disponibilites');
 });
 
 // Pet Keeping Routes (Client)
