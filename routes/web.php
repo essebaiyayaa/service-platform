@@ -135,8 +135,7 @@ Route::prefix('pet-keeper')->name('petkeeper.')->group(function () {
     Route::get('dashboard', PetKeeperDashboard::class)->name('dashboard');
         Route::get('mission/{id}', PetKeeperMissionDetails::class)->name('mission.show');
 
-    // Maintenant cette ligne va fonctionner car l'import est correct en haut
-    //Route::get('mission/{id}', PetKeeperMissionDetails::class)->name('mission.details');
+  
 });
 Route::get('/feedback/test', Feedback::class)->name('feedback.test');
 
