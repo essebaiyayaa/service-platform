@@ -64,6 +64,8 @@ use App\Livewire\Shared\Feedback;
 */
 use App\Livewire\PetKeeping\PetkeepingServiceBooking;
 use App\Livewire\Babysitter\BabysitterRegistrationSuccess;
+use App\Livewire\PetKeeping\MyServices as MyPetKeepingServices;
+use App\Livewire\PetKeeping\SingleService as SinglePetKeepingService;
 use App\Livewire\PetKeeping\SearchService as PetKeepingService;
 
 // Route::get('/petkeeper/mission/{id}', PetKeeperMissionDetails::class)
@@ -147,10 +149,10 @@ Route::prefix('pet-keeper')->name('petkeeper.')->group(function () {
     Route::get('inscription', PetKeeperRegistration::class)->name('inscription');
     Route::get('profile', PetKeeperProfile::class)->name('profile');
     Route::get('dashboard', PetKeeperDashboard::class)->name('dashboard');
-        Route::get('mission/{id}', PetKeeperMissionDetails::class)->name('mission.show');
+    Route::get('mission/{id}', PetKeeperMissionDetails::class)->name('mission.show');
+    Route::get('/dashboard/services', MyPetKeepingServices::class)->name('services');
+    Route::get('/dashboard/service/{serviceId}', SinglePetKeepingService::class)->name('services.show');
 
-    // Maintenant cette ligne va fonctionner car l'import est correct en haut
-    //Route::get('mission/{id}', PetKeeperMissionDetails::class)->name('mission.details');
 
 });
 // Admin Routes
