@@ -51,7 +51,6 @@ use App\Livewire\PetKeeping\PetKeeperRegistration;
 use App\Livewire\Babysitter\BabysitterRegistration;
 use App\Livewire\PetKeeping\PetKeeperMissionDetails;
 use App\Http\Controllers\Api\Auth\RegisterController;
-use App\Livewire\Shared\Feedback;
 
 // ICI : J'ai décommenté et corrigé le chemin (PetKeeping\)
 //use App\Livewire\PetKeeping\PetKeeperMissionDetails;
@@ -161,8 +160,21 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/intervenant/{id}', IntervenantDetails::class)->name('intervenant.details');
 });
 
-Route::get('/feedback/test', Feedback::class)->name('feedback.test');
+Route::get('/feedback/test', \App\Livewire\Shared\FeedbackComponent::class)->name('feedback.test');
 
 // Route avec paramètres (pour utilisation réelle)
-Route::get('/feedback/{demandeId}/{auteurId}/{cibleId}/{typeAuteur?}', Feedback::class)
+Route::get('/feedback/{demandeId}/{auteurId}/{cibleId}/{typeAuteur?}', \App\Livewire\Shared\FeedbackComponent::class)
     ->name('feedback.form');
+
+// Routes de feedback pour chaque service avec paramètres
+Route::get('/feedback/babysitter/{demandeId}/{auteurId}/{cibleId}/{typeAuteur?}', function($demandeId, $auteurId, $cibleId, $typeAuteur = 'client') {
+    return view('livewire.babysitter.feedback', compact('demandeId', 'auteurId', 'cibleId', 'typeAuteur'));
+})->name('feedback.babysitter');
+
+Route::get('/feedback/tutoring/{demandeId}/{auteurId}/{cibleId}/{typeAuteur?}', function($demandeId, $auteurId, $cibleId, $typeAuteur = 'client') {
+    return view('livewire.tutoring.feedback', compact('demandeId', 'auteurId', 'cibleId', 'typeAuteur'));
+})->name('feedback.tutoring');
+
+Route::get('/feedback/pet-keeping/{demandeId}/{auteurId}/{cibleId}/{typeAuteur?}', function($demandeId, $auteurId, $cibleId, $typeAuteur = 'client') {
+    return view('livewire.pet-keeping.feedback', compact('demandeId', 'auteurId', 'cibleId', 'typeAuteur'));
+})->name('feedback.pet-keeping');

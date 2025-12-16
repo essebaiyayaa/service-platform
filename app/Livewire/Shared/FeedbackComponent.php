@@ -8,7 +8,7 @@ use App\Models\Shared\Utilisateur;
 use App\Models\Shared\DemandesIntervention;
 use Illuminate\Support\Facades\DB;
 
-class Feedback extends Component
+class FeedbackComponent extends Component
 {
     // IDs
     public $demandeId;
@@ -61,6 +61,14 @@ class Feedback extends Component
 
     public function mount($demandeId = null, $auteurId = null, $cibleId = null, $typeAuteur = 'client')
     {
+        // Debug logs
+        \Log::info('Feedback mount - Parameters: ', [
+            'demandeId' => $demandeId,
+            'auteurId' => $auteurId,
+            'cibleId' => $cibleId,
+            'typeAuteur' => $typeAuteur
+        ]);
+        
         // Valider les paramètres requis
         if (!$demandeId || !$auteurId || !$cibleId) {
             session()->flash('error', 'Paramètres manquants: demandeId, auteurId et cibleId sont requis');
@@ -71,12 +79,13 @@ class Feedback extends Component
         $this->auteurId = $auteurId;
         $this->cibleId = $cibleId;
         $this->typeAuteur = $typeAuteur;
-
-        // Charger les données depuis la base
+        
+        // Déterminer le type de service AVANT de charger les données
+        $this->determineServiceType();
+        
         $this->loadData();
         
-        // Déterminer le type de service
-        $this->determineServiceType();
+        \Log::info('Feedback mount - Service type detected: ' . $this->typeService);
     }
 
     private function determineServiceType()
@@ -93,21 +102,21 @@ class Feedback extends Component
             }
             
             // Vérifier dans chaque table spécifique pour déterminer le type
+            $professeur = DB::table('professeurs')
+                ->where('intervenant_id', $intervenant->IdIntervenant)
+                ->first();
+            
+            if ($professeur) {
+                $this->typeService = 'tutoring';
+                return;
+            }
+            
             $babysitter = DB::table('babysitters')
                 ->where('idBabysitter', $intervenant->IdIntervenant)
                 ->first();
             
             if ($babysitter) {
                 $this->typeService = 'babysitter';
-                return;
-            }
-            
-            $professeur = DB::table('professeurs')
-                ->where('intervenant_id', $intervenant->id)
-                ->first();
-            
-            if ($professeur) {
-                $this->typeService = 'tutoring';
                 return;
             }
             
@@ -125,15 +134,19 @@ class Feedback extends Component
             
         } catch (\Exception $e) {
             \Log::error('Erreur determineServiceType: ' . $e->getMessage());
-            $this->typeService = 'babysitter'; 
+            $this->typeService = 'babysitter'; // Valeur par défaut
         }
     }
 
     private function loadData()
     {
         try {
-            // Charger la demande depuis la base de données
-            $this->demande = DemandesIntervention::find($this->demandeId);
+            // Charger la demande selon le type de service
+            if ($this->typeService === 'tutoring') {
+                $this->demande = DB::table('demandeprofesseur')->find($this->demandeId);
+            } else {
+                $this->demande = DemandesIntervention::find($this->demandeId);
+            }
             
             if (!$this->demande) {
                 session()->flash('error', 'Demande introuvable');
