@@ -59,6 +59,14 @@ use App\Livewire\PetKeeping\PetkeepingServiceBooking;
 use App\Livewire\Babysitter\BabysitterRegistrationSuccess;
 use App\Livewire\PetKeeping\SearchService as PetKeepingService;
 
+
+
+// 1. AJOUTE CETTE LIGNE TOUT EN HAUT DU FICHIER (avec les autres use)
+
+// ... le reste de ton code ...
+
+// 2. AJOUTE CETTE LIGNE TOUT EN BAS (en dehors des groupes pour tester facilement)
+Route::get('/mes-demandes', \App\Livewire\Client\MesDemandes::class)->name('client.mes-demandes');
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -138,6 +146,11 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/mes-avis', MesAvis::class)->name('mes-avis');
 });
+
+
+
+    // Maintenant cette ligne va fonctionner car l'import est correct en haut
+    //Route::get('mission/{id}', PetKeeperMissionDetails::class)->name('mission.details');
 
 // Pet Keeping Routes (Client)
 Route::prefix('pet-keeping')->group(function (){
