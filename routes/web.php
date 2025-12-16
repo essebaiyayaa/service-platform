@@ -30,6 +30,7 @@ use App\Livewire\Babysitter\ListeBabysitter;
 use App\Livewire\PetKeeping\PetKeeperProfile;
 use App\Livewire\Shared\Admin\AdminDashboard;
 use App\Livewire\Tutoring\RegisterProfesseur;
+use App\Livewire\Tutoring\DisponibilitesPage;
 
 // Babysitter Livewire Components
 use App\Livewire\Babysitter\BabysitterBooking;
@@ -115,6 +116,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/tutoring/profil-candidat/{id}', StudentProfile::class)->name('tutoring.student.profile');
     Route::get('/tutoring/mes-cours', MesCours::class)->name('tutoring.courses');
     Route::get('/tutoring/mon-profil', MonProfil::class)->name('tutoring.profile');
+    Route::get('/tutoring/disponibilites', DisponibilitesPage::class)->name('tutoring.disponibilites');
     
     // Babysitter
     Route::get('/babysitter/dashboard', BabysitterDashboard::class)->name('babysitter.dashboard');
