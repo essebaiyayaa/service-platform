@@ -97,6 +97,17 @@ Route::post('/register-client', [RegisterController::class, 'store'])->name('reg
 Route::post('/connexion', [LoginController::class, 'store'])->name('login.store');
 Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
+
+// Pet Keeper Routes (Provider)
+Route::prefix('pet-keeper')->name('petkeeper.')->group(function () {
+    Route::get('inscription', PetKeeperRegistration::class)->name('inscription');
+});
+
+Route::prefix('pet-keeping')->group(function (){
+    Route::get('search-service', PetKeepingService::class)->name('pet-keeping.search-service');
+});
+
+
 // Protected Routes
 Route::middleware(['auth'])->group(function () {
     // Profile
@@ -118,21 +129,14 @@ Route::middleware(['auth'])->group(function () {
     // Babysitter
     Route::get('/babysitter/dashboard', BabysitterDashboard::class)->name('babysitter.dashboard');
     Route::get('/babysitter/profile', BabysitterProfile::class)->name('babysitter.profile');
+
+
+    //petKeeping
+    Route::get('/pet-keeper/profile', PetKeeperProfile::class)->name('petkeeper.profile');
+    Route::get('/pet-keeper/dashboard', PetKeeperDashboard::class)->name('petkeeper.dashboard');
+    Route::get('/pet-keeper/mission/{id}', PetKeeperMissionDetails::class)->name('petkeeper.mission.show');
+    Route::get('/pet-keeping/book/{IdService}', PetKeepingServiceBooking::class)->name('pet-keeper.book');
 });
 
-// Pet Keeping Routes (Client)
-Route::prefix('pet-keeping')->group(function (){
-    Route::get('search-service', PetKeepingService::class);
-    Route::get('book/{IdService}', PetKeepingServiceBooking::class)->name('pet-keeper.book');
-});
 
-// Pet Keeper Routes (Provider)
-Route::prefix('pet-keeper')->name('petkeeper.')->group(function () {
-    Route::get('inscription', PetKeeperRegistration::class)->name('inscription');
-    Route::get('profile', PetKeeperProfile::class)->name('profile');
-    Route::get('dashboard', PetKeeperDashboard::class)->name('dashboard');
-        Route::get('mission/{id}', PetKeeperMissionDetails::class)->name('mission.show');
 
-    // Maintenant cette ligne va fonctionner car l'import est correct en haut
-    //Route::get('mission/{id}', PetKeeperMissionDetails::class)->name('mission.details');
-});
