@@ -46,6 +46,8 @@ use App\Livewire\PetKeeping\PetkeepingServiceBooking;
 use App\Livewire\PetKeeping\PetKeeperProfile;
 use App\Livewire\PetKeeping\PetKeeperDashboard;
 use App\Livewire\PetKeeping\PetKeeperRegistration;
+use App\Livewire\Babysitter\FeedbackBabysitter;
+
 // ICI : J'ai décommenté et corrigé le chemin (PetKeeping\)
 //use App\Livewire\PetKeeping\PetKeeperMissionDetails;
 
@@ -134,3 +136,8 @@ Route::prefix('pet-keeper')->name('petkeeper.')->group(function () {
     // Maintenant cette ligne va fonctionner car l'import est correct en haut
     //Route::get('mission/{id}', PetKeeperMissionDetails::class)->name('mission.details');
 });
+Route::get('/feedback/test', FeedbackBabysitter::class)->name('feedback.test');
+
+// Route avec paramètres (pour utilisation réelle)
+Route::get('/feedback/{demandeId}/{auteurId}/{cibleId}/{typeAuteur?}', FeedbackBabysitter::class)
+    ->name('feedback.form');
