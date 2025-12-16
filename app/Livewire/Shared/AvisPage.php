@@ -21,7 +21,7 @@ class AvisPage extends Component
     public $selectedFeedbackId = null;
     public $claimSubject = '';
     public $claimDescription = '';
-    public $claimProof = '';
+    public $claimProof = null;
 
     public function mount()
     {
@@ -181,11 +181,13 @@ class AvisPage extends Component
         $this->validate([
             'claimSubject' => 'required|string|max:255',
             'claimDescription' => 'required|string|min:10',
-            'claimProof' => 'nullable|string|max:255'
+            'claimProof' => 'nullable|file|max:10240|mimes:pdf,jpg,jpeg,png,doc,docx,zip'
         ], [
             'claimSubject.required' => 'Le sujet est obligatoire.',
             'claimDescription.required' => 'La description est obligatoire.',
-            'claimDescription.min' => 'La description doit contenir au moins 10 caractères.'
+            'claimDescription.min' => 'La description doit contenir au moins 10 caractères.',
+            'claimProof.max' => 'Le fichier ne doit pas dépasser 10MB.',
+            'claimProof.mimes' => 'Le format du fichier n\'est pas autorisé.'
         ]);
 
         if ($this->selectedFeedbackId) {
@@ -196,6 +198,12 @@ class AvisPage extends Component
 
             if ($feedback) {
                 try {
+                    // Gérer le fichier de preuve
+                    $proofPath = null;
+                    if ($this->claimProof) {
+                        $proofPath = $this->claimProof->store('reclamations', 'public');
+                    }
+
                     // Insérer dans la table des réclamations
                     DB::table('reclamantions')->insert([
                         'idFeedback' => $this->selectedFeedbackId,
@@ -203,7 +211,7 @@ class AvisPage extends Component
                         'idCible' => $feedback->idAuteur,
                         'sujet' => $this->claimSubject,
                         'description' => $this->claimDescription,
-                        'preuves' => $this->claimProof,
+                        'preuves' => $proofPath,
                         'statut' => 'en_attente',
                         'priorite' => 'moyenne',
                         'dateCreation' => now()
