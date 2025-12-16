@@ -15,6 +15,7 @@ class Feedback extends Component
     public $auteurId;
     public $cibleId;
     public $typeAuteur;
+    public $typeService; // babysitter, tutoring, petkeeping
 
     // Informations de la demande
     public $demande;
@@ -73,6 +74,59 @@ class Feedback extends Component
 
         // Charger les données depuis la base
         $this->loadData();
+        
+        // Déterminer le type de service
+        $this->determineServiceType();
+    }
+
+    private function determineServiceType()
+    {
+        try {
+            // Récupérer l'intervenant pour déterminer son type
+            $intervenant = DB::table('intervenants')
+                ->where('IdIntervenant', $this->cibleId)
+                ->first();
+            
+            if (!$intervenant) {
+                session()->flash('error', 'Intervenant non trouvé');
+                return;
+            }
+            
+            // Vérifier dans chaque table spécifique pour déterminer le type
+            $babysitter = DB::table('babysitters')
+                ->where('idBabysitter', $intervenant->IdIntervenant)
+                ->first();
+            
+            if ($babysitter) {
+                $this->typeService = 'babysitter';
+                return;
+            }
+            
+            $professeur = DB::table('professeurs')
+                ->where('intervenant_id', $intervenant->id)
+                ->first();
+            
+            if ($professeur) {
+                $this->typeService = 'tutoring';
+                return;
+            }
+            
+            $petkeeper = DB::table('petkeepers')
+                ->where('idPetKeeper', $intervenant->IdIntervenant)
+                ->first();
+            
+            if ($petkeeper) {
+                $this->typeService = 'petkeeping';
+                return;
+            }
+            
+            // Si aucun type trouvé, utiliser babysitter par défaut
+            $this->typeService = 'babysitter';
+            
+        } catch (\Exception $e) {
+            \Log::error('Erreur determineServiceType: ' . $e->getMessage());
+            $this->typeService = 'babysitter'; 
+        }
     }
 
     private function loadData()
@@ -243,6 +297,15 @@ class Feedback extends Component
 
     public function render()
     {
-        return view('livewire.babysitter.feedback-babysitter');
+        // Retourner la vue selon le type de service
+        switch ($this->typeService) {
+            case 'tutoring':
+                return view('livewire.tutoring.feedback-tutoring');
+            case 'petkeeping':
+                return view('livewire.petkeeping.feedback-petkeeping');
+            case 'babysitter':
+            default:
+                return view('livewire.babysitter.feedback-babysitter');
+        }
     }
 }
