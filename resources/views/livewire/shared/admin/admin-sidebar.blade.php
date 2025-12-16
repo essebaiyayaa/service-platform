@@ -72,9 +72,9 @@
 
         {{-- Réclamations --}}
         <button
-            wire:click="navigate('admin-complaints')"
-            class="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all {{ $currentPage === 'admin-complaints' ? 'bg-[#2B5AA8] text-white' : 'hover:bg-gray-100 text-[#3a3a3a]' }}"
-            style="font-weight: {{ $currentPage === 'admin-complaints' ? '700' : '600' }}; box-shadow: {{ $currentPage === 'admin-complaints' ? '0 2px 8px rgba(43, 90, 168, 0.3)' : 'none' }};"
+            wire:click="navigate('admin-reclamations')"
+            class="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all {{ $currentPage === 'admin-reclamations' ? 'bg-[#2B5AA8] text-white' : 'hover:bg-gray-100 text-[#3a3a3a]' }}"
+            style="font-weight: {{ $currentPage === 'admin-reclamations' ? '700' : '600' }}; box-shadow: {{ $currentPage === 'admin-reclamations' ? '0 2px 8px rgba(43, 90, 168, 0.3)' : 'none' }};"
             title="{{ $isCollapsed ? 'Réclamations' : '' }}"
         >
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
