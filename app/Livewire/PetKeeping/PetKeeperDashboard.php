@@ -387,17 +387,8 @@ public function confirmRefusal()
     ->get();
 
             foreach ($demandesUrgentes as $d) {
-
-    // Créneaux depuis JSON
-    $d->creneaux = $this->parseCreneaux($d->note_speciales);
-
-    // Prix réel
-    $d->prix_estime = $this->calculerPrixDepuisCreneaux($d->creneaux);
-
-    // Tous les animaux
-    $d->animaux = $this->getAnimauxByDemande($d->idDemande);
-}
-
+                $d->prix_estime = $this->calculerPrix($d->heureDebut, $d->heureFin);
+            }
         }
 
         // 3. Missions à venir
@@ -421,12 +412,9 @@ public function confirmRefusal()
 
         // Calculer le prix pour chaque mission à venir
         foreach ($missionsAVenir as $mission) {
-    $mission->creneaux = $this->parseCreneaux($mission->note_speciales);
-    $mission->prix_estime = $this->calculerPrixDepuisCreneaux($mission->creneaux);
-    $mission->animaux = $this->getAnimauxByDemande($mission->idDemande);
-}
+            $mission->prix_estime = $this->calculerPrix($mission->heureDebut, $mission->heureFin);
+        }
 
-        
         // 4. Avis récents
         $avisRecents = DB::table('feedbacks')
             ->join('utilisateurs', 'feedbacks.idAuteur', '=', 'utilisateurs.idUser')
@@ -461,6 +449,4 @@ public function confirmRefusal()
         ]);
         
     }
-
-    //test
 }
