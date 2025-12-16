@@ -29,6 +29,8 @@ use App\Livewire\Shared\RegisterClientPage;
 use App\Livewire\Babysitter\ListeBabysitter;
 use App\Livewire\PetKeeping\PetKeeperProfile;
 use App\Livewire\Shared\Admin\AdminDashboard;
+use App\Livewire\Shared\Admin\AdminIntervenants;
+use App\Livewire\Shared\Admin\IntervenantDetails;
 use App\Livewire\Tutoring\RegisterProfesseur;
 use App\Livewire\Tutoring\DisponibilitesPage;
 
@@ -143,5 +145,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', AdminDashboard::class)->name('dashboard');
     // Route::get('/users', AdminUsers::class)->name('users');
     // Route::get('/complaints', AdminComplaints::class)->name('complaints');
-    // Route::get('/intervenants', AdminIntervenants::class)->name('intervenants');
+    Route::get('/intervenants', AdminIntervenants::class)->name('intervenants');
+    Route::get('/intervenant/{id}', IntervenantDetails::class)->name('intervenant.details');
 });
