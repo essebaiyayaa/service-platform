@@ -1,4 +1,5 @@
 <div class="min-h-screen bg-[#F7F7F7]">
+    @php $babysitter = $babysitter ?? null; @endphp
     @if(isset($error))
         {{-- Message d'erreur --}}
         <div class="min-h-screen bg-[#F7F7F7] flex items-center justify-center p-4">

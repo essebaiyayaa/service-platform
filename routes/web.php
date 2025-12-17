@@ -16,7 +16,7 @@ use App\Livewire\Shared\ServicesPage;
 use App\Livewire\Tutoring\MesClients;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Tutoring\MesDemandes;
-use App\Livewire\Shared\AvisPage;
+
 
 // Tutoring Livewire Components
 use App\Livewire\Shared\IntervenantHub;
@@ -39,6 +39,8 @@ use App\Livewire\Tutoring\DisponibilitesPage as TutoringDisponibilitesPage;
 use App\Livewire\Babysitter\BabysitterBooking;
 use App\Livewire\Babysitter\BabysitterProfile;
 use App\Livewire\Babysitter\DisponibilitesPage as BabysitterDisponibilitesPage;
+use App\Livewire\Babysitter\AvisPage as BabysitterAvisPage;
+use App\Livewire\Tutoring\AvisPage as TutoringAvisPage;
 use App\Livewire\PetKeeping\PetKeeperMissions;
 use App\Livewire\PetKeeping\PetKeeperDashboard;
 use App\Livewire\Babysitter\BabysitterDashboard;
@@ -126,11 +128,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/tutoring/mes-cours', MesCours::class)->name('tutoring.courses');
     Route::get('/tutoring/mon-profil', MonProfil::class)->name('tutoring.profile');
     Route::get('/tutoring/disponibilites', TutoringDisponibilitesPage::class)->name('tutoring.disponibilites');
+    Route::get('/tutoring/avis', TutoringAvisPage::class)->name('tutoring.avis');
     
     // Babysitter
     Route::get('/babysitter/dashboard', BabysitterDashboard::class)->name('babysitter.dashboard');
     Route::get('/babysitter/disponibilites', BabysitterDisponibilitesPage::class)->name('babysitter.disponibilites');
-    Route::get('/babysitter/avis', AvisPage::class)->name('babysitter.avis');
+    Route::get('/babysitter/avis', BabysitterAvisPage::class)->name('babysitter.avis');
     Route::get('/babysitter/profile', BabysitterProfile::class)->name('babysitter.profile');
 });
 

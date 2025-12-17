@@ -1,5 +1,12 @@
 @php
-    $babysitterName = $babysitter?->utilisateur?->prenom . ' ' . $babysitter?->utilisateur?->nom ?? 'Babysitter';
+    // Ensure $babysitter is always defined to avoid undefined variable errors in views
+    $babysitter = $babysitter ?? null;
+
+    // Build a safe display name
+    $given = $babysitter?->utilisateur?->prenom ?? '';
+    $family = $babysitter?->utilisateur?->nom ?? '';
+    $babysitterName = trim(sprintf('%s %s', $given, $family)) ?: 'Babysitter';
+
     $babysitterRating = $babysitter?->utilisateur?->note ?? 0;
     $babysitterPhoto = $babysitter?->utilisateur?->photo ?? null;
     $pendingRequestsCount = \App\Models\Babysitting\DemandeIntervention::where('idIntervenant', auth()->id())
