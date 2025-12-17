@@ -1,12 +1,14 @@
 <?php
 
-use App\Livewire\Shared\Register;
+use App\Livewire\Shared\AvisPage;
 
 // Auth Controllers
-use App\Livewire\Shared\LoginPage;
-use App\Livewire\Tutoring\MesCours;
+use App\Livewire\Shared\Feedback;
+use App\Livewire\Shared\Register;
 
 // Shared Livewire Components
+use App\Livewire\Shared\LoginPage;
+use App\Livewire\Tutoring\MesCours;
 use App\Livewire\Shared\ContactPage;
 use App\Livewire\Shared\LandingPage;
 use App\Livewire\Tutoring\Dashboard;
@@ -16,13 +18,13 @@ use App\Livewire\Shared\ServicesPage;
 use App\Livewire\Tutoring\MesClients;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Tutoring\MesDemandes;
-use App\Livewire\Shared\AvisPage;
-use App\Livewire\Shared\Client\MesAvis;
 
 // Tutoring Livewire Components
+use App\Livewire\Shared\Client\MesAvis;
 use App\Livewire\Shared\IntervenantHub;
 use App\Livewire\Tutoring\TutorDetails;
 use App\Livewire\Tutoring\ClientDetails;
+use App\Livewire\Shared\Admin\AdminUsers;
 use App\Livewire\Tutoring\BookingProcess;
 use App\Livewire\Tutoring\DemandeDetails;
 use App\Livewire\Tutoring\ProfessorsList;
@@ -31,34 +33,40 @@ use App\Livewire\Shared\RegisterClientPage;
 use App\Livewire\Babysitter\ListeBabysitter;
 use App\Livewire\PetKeeping\PetKeeperProfile;
 use App\Livewire\Shared\Admin\AdminDashboard;
-use App\Livewire\Shared\Admin\AdminIntervenants;
-use App\Livewire\Shared\Admin\IntervenantDetails;
-use App\Livewire\Shared\Admin\AdminUsers;
 use App\Livewire\Tutoring\RegisterProfesseur;
-use App\Livewire\Tutoring\DisponibilitesPage as TutoringDisponibilitesPage;
-
-// Babysitter Livewire Components
 use App\Livewire\Babysitter\BabysitterBooking;
 use App\Livewire\Babysitter\BabysitterProfile;
-use App\Livewire\Babysitter\DisponibilitesPage as BabysitterDisponibilitesPage;
+
+// Babysitter Livewire Components
 use App\Livewire\PetKeeping\PetKeeperMissions;
 use App\Livewire\PetKeeping\PetKeeperDashboard;
+use App\Livewire\Shared\Admin\ReclamationsList;
 use App\Livewire\Babysitter\BabysitterDashboard;
+use App\Livewire\Shared\Admin\AdminIntervenants;
 use App\Livewire\Shared\RegisterIntervenantPage;
-use App\Http\Controllers\Api\Auth\LoginController;
+use App\Livewire\Shared\Admin\IntervenantDetails;
+use App\Livewire\Shared\Admin\ReclamationDetails;
 
 // PetKeeping Livewire Components
+use App\Livewire\Shared\Admin\TraiterReclamation;
+use App\Http\Controllers\Api\Auth\LoginController;
 use App\Livewire\Babysitter\BabysitterProfilePage;
 use App\Livewire\PetKeeping\PetKeeperRegistration;
 use App\Livewire\Babysitter\BabysitterRegistration;
 use App\Livewire\PetKeeping\PetKeeperMissionDetails;
-use App\Http\Controllers\Api\Auth\RegisterController;
-use App\Livewire\Shared\Feedback;
 
+use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Livewire\PetKeeping\PetkeepingServiceBooking;
 use App\Livewire\Babysitter\BabysitterRegistrationSuccess;
-use App\Livewire\PetKeeping\SearchService as PetKeepingService;
 
+
+
+// 1. AJOUTE CETTE LIGNE TOUT EN HAUT DU FICHIER (avec les autres use)
+
+// ... le reste de ton code ...
+
+// 2. AJOUTE CETTE LIGNE TOUT EN BAS (en dehors des groupes pour tester facilement)
+Route::get('/mes-demandes', \App\Livewire\Client\MesDemandes::class)->name('client.mes-demandes');
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -66,7 +74,10 @@ use App\Livewire\PetKeeping\SearchService as PetKeepingService;
 */
 
 use App\Livewire\PetKeeping\MyServices as MyPetKeepingServices;
+use App\Livewire\PetKeeping\SearchService as PetKeepingService;
 use App\Livewire\PetKeeping\SingleService as SinglePetKeepingService;
+use App\Livewire\Tutoring\DisponibilitesPage as TutoringDisponibilitesPage;
+use App\Livewire\Babysitter\DisponibilitesPage as BabysitterDisponibilitesPage;
 
 
 // Public Routes
@@ -139,6 +150,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/mes-avis', MesAvis::class)->name('mes-avis');
 });
 
+
+
+    // Maintenant cette ligne va fonctionner car l'import est correct en haut
+    //Route::get('mission/{id}', PetKeeperMissionDetails::class)->name('mission.details');
+
 // Pet Keeping Routes (Client)
 Route::prefix('pet-keeping')->group(function (){
     Route::get('search-service', PetKeepingService::class)->name('pet-keeping.search-service');
@@ -161,6 +177,9 @@ Route::prefix('pet-keeper')->name('petkeeper.')->group(function () {
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', AdminDashboard::class)->name('dashboard');
     Route::get('/users', AdminUsers::class)->name('users');
+    Route::get('/reclamations', ReclamationsList::class)->name('reclamations');
+    Route::get('/reclamations/{id}/details', ReclamationDetails::class)->name('reclamations.details');
+    Route::get('/reclamations/{id}/traiter', TraiterReclamation::class)->name('reclamations.traiter');
     Route::get('/intervenants', AdminIntervenants::class)->name('intervenants');
     Route::get('/intervenant/{id}', IntervenantDetails::class)->name('intervenant.details');
 });

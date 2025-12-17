@@ -220,7 +220,14 @@
                             <div class="flex items-center gap-2 mb-2">
                                 <span class="text-xs font-bold text-gray-900 uppercase tracking-wide">Animal</span>
                             </div>
-                            <p class="text-sm text-gray-700 font-semibold">{{ $demande->nom_animal ?? 'Inconnu' }} <span class="text-gray-400 text-xs">({{ $demande->race_animal ?? 'Race inconnue' }})</span></p>
+@foreach($demande->animaux as $animal)
+    <p class="text-sm text-gray-700 font-semibold">
+        🐾 {{ $animal->nomAnimal }}
+        <span class="text-gray-400 text-xs">
+            ({{ $animal->race }}, {{ $animal->age }} ans)
+        </span>
+    </p>
+@endforeach
                         </div>
                         <div class="flex-1 bg-gray-50 p-4 rounded-2xl border border-gray-100">
                             <div class="flex items-center gap-2 mb-2">
@@ -229,7 +236,12 @@
                             <p class="text-sm text-gray-700 font-semibold">
                                 {{ \Carbon\Carbon::parse($demande->dateSouhaitee)->format('d/m/Y') }} <br>
                                 <span class="text-gray-500 font-normal">
-                                    {{ \Carbon\Carbon::parse($demande->heureDebut)->format('H:i') }} - {{ \Carbon\Carbon::parse($demande->heureFin)->format('H:i') }}
+@foreach($demande->creneaux as $c)
+    <div class="text-sm text-gray-600">
+        📅 {{ \Carbon\Carbon::parse($c['date'])->format('d/m/Y') }}
+        ⏰ {{ $c['heureDebut'] }} - {{ $c['heureFin'] }}
+    </div>
+@endforeach
                                 </span>
                             </p>
                         </div>
@@ -239,7 +251,10 @@
                          <div>
                             <p class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">Total estimé</p>
                             <!-- Prix factice pour l'affichage, ajuster selon ton controller -->
-                            <span class="text-3xl font-black text-gray-900">300 <span class="text-sm text-amber-600 font-bold">DH</span></span>
+<span class="text-3xl font-black text-gray-900">
+    {{ $demande->prix_estime }}
+    <span class="text-sm text-amber-600 font-bold">DH</span>
+</span>
                         </div>
 
                         <!-- BOUTONS ACTIONS (CORRECTEMENT PLACÉS ICI) -->
