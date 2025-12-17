@@ -222,6 +222,9 @@
 
                     @if($currentStep == 2)
                     <div class="space-y-6">
+                        <h2 class="text-xl font-bold text-black mb-4">Localisation et Photo</h2>
+
+                        <!-- Photo de profil -->
                         <div>
                             <label class="block text-sm mb-2 text-[#2a2a2a] font-semibold">Photo de profil (optionnel)</label>
                             <input type="file" wire:model="photo_profil" accept="image/*" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#2B5AA8] file:text-white hover:file:bg-[#224A91]" />
@@ -239,42 +242,69 @@
                             @endif
                         </div>
 
+                        <!-- Localisation -->
                         <div>
                             <label class="block text-sm mb-2 text-[#2a2a2a] font-semibold">Localisation</label>
-                            <div class="space-y-3">
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input id="auto_localisation_checkbox" type="checkbox" wire:model.live="auto_localisation" class="w-4 h-4 text-[#2B5AA8] bg-gray-100 border-gray-300 rounded focus:ring-[#2B5AA8] focus:ring-2" />
-                                    <span class="text-sm text-[#6b7280]">Utiliser ma position actuelle</span>
-                                </label>
+                            
+                            <!-- Bouton localisation automatique -->
+                            <button
+                                type="button"
+                                id="locationBtnClient"
+                                onclick="getLocationForClient()"
+                                class="w-full py-3 bg-[#E1EAF7] text-[#2B5AA8] rounded-lg hover:bg-[#d1dbf0] transition-all font-semibold flex items-center justify-center gap-2 mb-4"
+                            >
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                                Obtenir ma localisation automatique
+                            </button>
 
-                                @if(!$auto_localisation)
-                                    <input type="text" wire:model="adresse" class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2B5AA8] focus:border-transparent transition-all text-[#0a0a0a] @error('adresse') border-red-500 @enderror" placeholder="Entrez votre adresse" />
-                                    @error('adresse') 
-                                        <span class="text-red-500 text-sm mt-1 block flex items-center gap-1">
-                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                                            {{ $message }}
-                                        </span>
+                            <div class="relative">
+                                <div class="absolute inset-0 flex items-center">
+                                    <div class="w-full border-t border-gray-300"></div>
+                                </div>
+                                <div class="relative flex justify-center text-sm">
+                                    <span class="px-4 bg-white text-gray-500 font-medium">ou saisissez manuellement</span>
+                                </div>
+                            </div>
+
+                            <!-- Champs de localisation -->
+                            <div class="grid md:grid-cols-2 gap-4 mt-4">
+                                <div>
+                                    <label class="block text-xs mb-1 text-gray-600 font-medium">Pays</label>
+                                    <select wire:model="pays" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2B5AA8] text-sm">
+                                        <option value="">Sélectionnez</option>
+                                        <option value="Maroc">Maroc</option>
+                                        <option value="France">France</option>
+                                        <option value="Belgique">Belgique</option>
+                                    </select>
+                                    @error('pays') 
+                                        <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
                                     @enderror
-                                @else
-                                    <div class="text-sm text-[#6b7280] bg-gray-50 px-3 py-2 rounded-lg">
-                                        @if($ville)
-                                            <div class="flex items-center gap-2">
-                                                <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
-                                                </svg>
-                                                <span>{{ $ville }}</span>
-                                            </div>
-                                        @else
-                                            <div class="flex items-center gap-2">
-                                                <svg class="w-4 h-4 text-yellow-500 animate-spin" fill="none" viewBox="0 0 24 24">
-                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                </svg>
-                                                <span>Détection de votre position...</span>
-                                            </div>
-                                        @endif
-                                    </div>
-                                @endif
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs mb-1 text-gray-600 font-medium">Ville</label>
+                                    <select wire:model="ville" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2B5AA8] text-sm">
+                                        <option value="">Sélectionnez</option>
+                                        <option value="Tétouan">Tétouan</option>
+                                        <option value="Casablanca">Casablanca</option>
+                                        <option value="Rabat">Rabat</option>
+                                        <option value="Tanger">Tanger</option>
+                                    </select>
+                                    @error('ville') 
+                                        <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <label class="block text-xs mb-1 text-gray-600 font-medium">Adresse complète</label>
+                                <textarea wire:model="adresse" rows="2" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2B5AA8] text-sm resize-none" placeholder="Ex: 123 Rue Mohammed V"></textarea>
+                                @error('adresse') 
+                                    <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
+                                @enderror
                             </div>
                         </div>
 
@@ -326,39 +356,79 @@
             }
         }
 
+        // Fonction de géolocalisation pour client
+        window.getLocationForClient = function() {
+            const btn = document.getElementById('locationBtnClient');
+            
+            if (!navigator.geolocation) {
+                alert('La géolocalisation n\'est pas supportée par votre navigateur.');
+                return;
+            }
+
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<svg class="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+            btn.disabled = true;
+
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+
+                    @this.set('latitude', lat);
+                    @this.set('longitude', lng);
+
+                    try {
+                        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+                        const data = await response.json();
+
+                        if (data.address) {
+                            const address = data.address;
+                            @this.set('adresse', data.display_name);
+                            @this.set('ville', address.city || address.town || address.village || '');
+                            @this.set('pays', address.country || '');
+                        }
+
+                        btn.innerHTML = originalHTML;
+                        btn.disabled = false;
+                    } catch (error) {
+                        console.error('Erreur de géocodage:', error);
+                        btn.innerHTML = originalHTML;
+                        btn.disabled = false;
+                        alert('Localisation détectée, mais impossible de récupérer l\'adresse. Veuillez remplir manuellement.');
+                    }
+                },
+                (error) => {
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            alert('❌ Accès à la localisation refusé. Veuillez autoriser l\'accès dans les paramètres de votre navigateur.');
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            alert('❌ Les informations de localisation ne sont pas disponibles.');
+                            break;
+                        case error.TIMEOUT:
+                            alert('❌ La demande de localisation a expiré.');
+                            break;
+                        default:
+                            alert('❌ Une erreur inconnue s\'est produite.');
+                            break;
+                    }
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                }
+            );
+        };
+
         setInterval(function() {
             fetch('/refresh-csrf').then(response => response.json()).then(data => {
                 document.querySelector('meta[name="csrf-token"]').setAttribute('content', data.token);
             }).catch(error => console.error('Erreur rafraîchissement CSRF:', error));
         }, 600000);
-
-        document.addEventListener('livewire:init', () => {
-            Livewire.on('getLocation', () => {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                            const { latitude, longitude } = position.coords;
-                            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
-                                .then(response => response.json())
-                                .then(data => {
-                                    const city = data.address?.city || data.address?.town || data.address?.village || 'Ville inconnue';
-                                    Livewire.dispatch('setLocation', { latitude, longitude, city });
-                                })
-                                .catch(error => {
-                                    console.error('Erreur de géocodage:', error);
-                                    Livewire.dispatch('setLocation', { latitude, longitude, city: 'Ville inconnue' });
-                                });
-                        },
-                        (error) => {
-                            console.error('Erreur de géolocalisation:', error);
-                            alert('Impossible d\'obtenir votre position. Veuillez entrer votre adresse manuellement.');
-                        }
-                    );
-                } else {
-                    alert('La géolocalisation n\'est pas supportée par votre navigateur.');
-                }
-            });
-        });
     </script>
     @endpush
 </div>

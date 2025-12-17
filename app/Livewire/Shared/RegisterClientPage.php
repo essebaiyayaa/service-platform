@@ -40,6 +40,7 @@ class RegisterClientPage extends Component
     // Propriétés de localisation
     public $latitude = null;
     public $longitude = null;
+    public $pays = ''; // AJOUTÉ
     public $ville = '';
     public $adresse = '';
     public $auto_localisation = false;
@@ -84,11 +85,10 @@ class RegisterClientPage extends Component
         } elseif ($this->currentStep == 2) {
             $rules = [
                 'photo_profil' => 'nullable|image|max:5120',
+                'pays' => 'nullable|string|max:100', // AJOUTÉ
+                'ville' => 'nullable|string|max:100',
+                'adresse' => 'nullable|string|max:500',
             ];
-            
-            if (!$this->auto_localisation) {
-                $rules['adresse'] = 'required|string|max:500';
-            }
         }
 
         return $rules;
@@ -115,7 +115,10 @@ class RegisterClientPage extends Component
         'dateNaissance.before' => 'La date de naissance doit être dans le passé',
         'photo_profil.image' => 'Le fichier doit être une image',
         'photo_profil.max' => 'L\'image ne peut pas dépasser 5MB',
+        'pays.max' => 'Le nom du pays est trop long',
+        'ville.max' => 'Le nom de la ville est trop long',
         'adresse.required' => 'L\'adresse est requise',
+        'adresse.max' => 'L\'adresse est trop longue',
         'verificationCode.required' => 'Le code de vérification est obligatoire',
         'verificationCode.size' => 'Le code doit contenir exactement 10 caractères',
     ];
@@ -218,12 +221,16 @@ class RegisterClientPage extends Component
     public function updatedAutoLocalisation($value)
     {
         if ($value) {
+            $this->pays = '';
             $this->ville = '';
+            $this->adresse = '';
             $this->latitude = null;
             $this->longitude = null;
             $this->dispatch('getLocation');
         } else {
+            $this->pays = '';
             $this->ville = '';
+            $this->adresse = '';
             $this->latitude = null;
             $this->longitude = null;
         }
@@ -232,16 +239,22 @@ class RegisterClientPage extends Component
     /**
      * Méthode appelée depuis JavaScript après obtention de la géolocalisation
      */
-    public function setLocation($latitude, $longitude, $city)
+    public function setLocation($latitude, $longitude, $city, $fullAddress = null)
     {
         $this->latitude = $latitude;
         $this->longitude = $longitude;
         $this->ville = $city;
         
+        // Si l'adresse complète est fournie, on la stocke
+        if ($fullAddress) {
+            $this->adresse = $fullAddress;
+        }
+        
         Log::info('Localisation définie', [
             'latitude' => $latitude,
             'longitude' => $longitude,
-            'ville' => $city
+            'ville' => $city,
+            'adresse_complete' => $fullAddress
         ]);
     }
 
@@ -350,6 +363,7 @@ class RegisterClientPage extends Component
                 'localisation' => [
                     'latitude' => $this->latitude,
                     'longitude' => $this->longitude,
+                    'pays' => $this->pays,
                     'ville' => $this->ville,
                     'adresse' => $this->adresse
                 ]
