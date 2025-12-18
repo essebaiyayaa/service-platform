@@ -12,11 +12,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // Envoyer les rappels de feedback chaque semaine le lundi à 9h
+        // Envoyer les rappels de feedback chaque jour à 10h
         $schedule->command('feedback:send-reminders')
-            ->weekly()
-            ->mondays()
-            ->at('09:00')
+            ->daily()
+            ->at('10:00')
             ->withoutOverlapping()
             ->runInBackground()
             ->appendOutputTo(storage_path('logs/feedback-reminders.log'));

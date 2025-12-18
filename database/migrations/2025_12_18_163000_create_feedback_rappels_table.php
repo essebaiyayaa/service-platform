@@ -23,9 +23,9 @@ return new class extends Migration
             $table->boolean('feedback_fourni')->default(false);
             $table->timestamps();
 
-            $table->foreign('idDemande')->references('idDemande')->on('demande_interventions')->onDelete('cascade');
+            $table->foreign('idDemande')->references('idDemande')->on('demandes_intervention')->onDelete('cascade');
             $table->foreign('idClient')->references('idUser')->on('utilisateurs')->onDelete('cascade');
-            $table->foreign('idIntervenant')->references('IdIntervenant')->on('intervenants')->onDelete('cascade');
+            $table->foreign('idIntervenant')->references('idIntervenant')->on('intervenants')->onDelete('cascade');
             
             $table->index(['idDemande', 'type_destinataire', 'feedback_fourni']);
         });

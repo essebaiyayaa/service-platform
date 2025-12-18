@@ -80,4 +80,30 @@ class FeedbackRappel extends Model
                 ->exists();
         }
     }
+
+    /**
+     * Marquer les rappels comme terminés lorsqu'un feedback est soumis
+     */
+    public static function markAsCompleted($idDemande, $userId, $userType)
+    {
+        if ($userType === 'client') {
+            FeedbackRappel::where('idDemande', $idDemande)
+                ->where('idClient', $userId)
+                ->where('type_destinataire', 'client')
+                ->where('feedback_fourni', false)
+                ->update(['feedback_fourni' => true]);
+        } else {
+            FeedbackRappel::where('idDemande', $idDemande)
+                ->where('idIntervenant', $userId)
+                ->where('type_destinataire', 'intervenant')
+                ->where('feedback_fourni', false)
+                ->update(['feedback_fourni' => true]);
+        }
+
+        \Log::info('Rappels marqués comme terminés suite à feedback', [
+            'idDemande' => $idDemande,
+            'userId' => $userId,
+            'userType' => $userType
+        ]);
+    }
 }

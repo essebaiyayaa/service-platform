@@ -3,10 +3,10 @@
 namespace App\Jobs;
 
 use App\Models\Shared\FeedbackRappel;
-use App\Models\Shared\DemandeIntervention;
+use App\Models\DemandeIntervention;
 use App\Models\Shared\Utilisateur;
 use App\Models\Shared\Intervenant;
-use App\Models\Babysitting\FeedbackBabysitter;
+use App\Models\Shared\Feedback;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -27,48 +27,84 @@ class SendFeedbackReminderJob implements ShouldQueue
     {
         Log::info('Début du job de rappel de feedback');
         
-        // Récupérer les demandes terminées depuis au moins 1 jour
-        $demandesTerminees = DemandeIntervention::where('statut', 'confirmé')
-            ->where('dateSouhaitee', '<', Carbon::now()->subDay())
-            ->where('heureFin', '<', Carbon::now()->format('H:i'))
+        // Récupérer les demandes terminées (statut validée)
+        $demandesTerminees = DemandeIntervention::where('statut', 'validée')
+            ->whereNotNull('idIntervenant')
             ->get();
 
+        Log::info('Demandes trouvées', ['count' => $demandesTerminees->count()]);
+
         foreach ($demandesTerminees as $demande) {
-            $this->processDemandeForReminders($demande);
+            // Vérifier si l'intervention est terminée
+            if ($this->isInterventionTerminee($demande)) {
+                $this->processDemandeForReminders($demande);
+            }
         }
         
         Log::info('Fin du job de rappel de feedback');
     }
 
+    private function isInterventionTerminee(DemandeIntervention $demande): bool
+    {
+        if (!$demande->dateSouhaitee || !$demande->heureFin) {
+            return false;
+        }
+
+        $finIntervention = Carbon::parse($demande->dateSouhaitee . ' ' . $demande->heureFin);
+        return Carbon::now()->greaterThan($finIntervention);
+    }
+
     private function processDemandeForReminders(DemandeIntervention $demande)
     {
-        // Vérifier si des feedbacks existent déjà
-        $clientFeedbackExists = FeedbackBabysitter::where('idDemande', $demande->idDemande)
-            ->where('idClient', $demande->idClient)
+        // Vérifier si des feedbacks existent déjà pour cette demande
+        $clientFeedbackExists = Feedback::where('idDemande', $demande->idDemande)
+            ->where('idAuteur', $demande->idClient)
+            ->where('typeAuteur', 'client')
             ->exists();
 
-        $intervenantFeedbackExists = FeedbackBabysitter::where('idDemande', $demande->idDemande)
-            ->where('idBabysitter', $demande->idIntervenant)
+        $intervenantFeedbackExists = Feedback::where('idDemande', $demande->idDemande)
+            ->where('idAuteur', $demande->idIntervenant)
+            ->where('typeAuteur', 'intervenant')
             ->exists();
 
-        // Traiter le rappel pour le client
+        // Marquer les rappels comme terminés si des feedbacks existent
+        if ($clientFeedbackExists) {
+            $this->markRappelsAsCompleted($demande, 'client');
+        }
+
+        if ($intervenantFeedbackExists) {
+            $this->markRappelsAsCompleted($demande, 'intervenant');
+        }
+
+        // Traiter le rappel pour le client seulement si pas de feedback
         if (!$clientFeedbackExists) {
             $this->sendReminderToUser($demande, 'client');
         }
 
-        // Traiter le rappel pour l'intervenant
+        // Traiter le rappel pour l'intervenant seulement si pas de feedback
         if (!$intervenantFeedbackExists) {
             $this->sendReminderToUser($demande, 'intervenant');
         }
     }
 
+    private function markRappelsAsCompleted(DemandeIntervention $demande, string $userType)
+    {
+        FeedbackRappel::where('idDemande', $demande->idDemande)
+            ->where('type_destinataire', $userType)
+            ->where('feedback_fourni', false)
+            ->update(['feedback_fourni' => true]);
+
+        Log::info('Rappels marqués comme terminés', [
+            'idDemande' => $demande->idDemande,
+            'userType' => $userType
+        ]);
+    }
+
     private function sendReminderToUser(DemandeIntervention $demande, string $userType)
     {
-        $userId = $userType === 'client' ? $demande->idClient : $demande->idIntervenant;
-        
         // Calculer la date de fin de l'intervention
         $finIntervention = Carbon::parse($demande->dateSouhaitee . ' ' . $demande->heureFin);
-        $joursDepuisFin = Carbon::now()->diffInDays($finIntervention);
+        $joursDepuisFin = Carbon::now()->diffInDays($finIntervention, false);
         
         // Vérifier si un rappel existe déjà
         $existingRappel = FeedbackRappel::where('idDemande', $demande->idDemande)
@@ -78,12 +114,12 @@ class SendFeedbackReminderJob implements ShouldQueue
 
         if ($existingRappel) {
             // Vérifier si on doit envoyer le 2ème rappel (jour 6)
-            if ($existingRappel->rappel_number == 1 && $joursDepuisFin == 6) {
+            if ($existingRappel->rappel_number == 1 && $joursDepuisFin >= 6) {
                 $this->sendSecondReminder($demande, $userType, $existingRappel);
             }
         } else {
             // Envoyer le premier rappel (jour 1)
-            if ($joursDepuisFin == 1) {
+            if ($joursDepuisFin >= 1) {
                 $this->createFirstReminder($demande, $userType);
             }
         }
@@ -91,8 +127,6 @@ class SendFeedbackReminderJob implements ShouldQueue
 
     private function createFirstReminder(DemandeIntervention $demande, string $userType)
     {
-        $userId = $userType === 'client' ? $demande->idClient : $demande->idIntervenant;
-        
         $rappel = FeedbackRappel::create([
             'idDemande' => $demande->idDemande,
             'idClient' => $demande->idClient,
@@ -100,7 +134,7 @@ class SendFeedbackReminderJob implements ShouldQueue
             'type_destinataire' => $userType,
             'rappel_number' => 1,
             'date_envoi' => now(),
-            'prochain_rappel' => null, // Pas de prochain rappel automatique
+            'prochain_rappel' => null,
             'feedback_fourni' => false,
         ]);
 
@@ -116,20 +150,27 @@ class SendFeedbackReminderJob implements ShouldQueue
         $rappel->update([
             'rappel_number' => 2,
             'date_envoi' => now(),
-            'prochain_rappel' => null, // Pas d'autres rappels
+            'prochain_rappel' => null,
         ]);
     }
 
-    
     private function sendReminderEmail(DemandeIntervention $demande, string $userType, FeedbackRappel $rappel)
     {
         try {
-            $user = $userType === 'client' 
-                ? Utilisateur::find($demande->idClient)
-                : Utilisateur::find($demande->idIntervenant);
+            $userId = $userType === 'client' ? $demande->idClient : $demande->idIntervenant;
+            
+            $user = Utilisateur::find($userId);
 
             if (!$user) {
                 Log::error('Utilisateur non trouvé pour le rappel', [
+                    'userId' => $userId,
+                    'userType' => $userType
+                ]);
+                return;
+            }
+
+            if (!$user->email) {
+                Log::warning('Utilisateur sans email', [
                     'userId' => $userId,
                     'userType' => $userType
                 ]);
@@ -141,16 +182,16 @@ class SendFeedbackReminderJob implements ShouldQueue
                 'demande' => $demande,
                 'rappel_number' => $rappel->rappel_number,
                 'userType' => $userType,
-                'feedback_url' => route('feedback.form', ['idDemande' => $demande->idDemande])
+                'feedback_url' => url('/feedback/' . $demande->idDemande)
             ];
 
             $emailView = $userType === 'client' 
                 ? 'emails.feedback.client-reminder' 
                 : 'emails.feedback.intervenant-reminder';
 
-            Mail::send($emailView, $emailData, function ($message) use ($user, $rappel) {
+            Mail::send($emailView, $emailData, function ($message) use ($user, $demande) {
                 $message->to($user->email)
-                    ->subject('Rappel : Donnez votre feedback sur le service #' . $rappel->idDemande);
+                    ->subject('Rappel : Donnez votre feedback sur l\'intervention #' . $demande->idDemande);
             });
 
             Log::info('Email de rappel envoyé', [
@@ -164,7 +205,8 @@ class SendFeedbackReminderJob implements ShouldQueue
             Log::error('Erreur lors de l\'envoi de l\'email de rappel', [
                 'idDemande' => $demande->idDemande,
                 'userType' => $userType,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
         }
     }
