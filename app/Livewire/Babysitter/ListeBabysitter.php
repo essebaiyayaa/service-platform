@@ -170,7 +170,11 @@ class ListeBabysitter extends Component
             'formations',
             'categoriesEnfants',
             'experiencesBesoinsSpeciaux'
-        ])->valide();
+        ])->valide()
+        ->whereHas('intervenant.services', function ($q) {
+            $q->where('offres_services.statut', 'ACTIVE')
+              ->where('services.nomService', 'Babysitting');
+        });
       
     
 
@@ -279,8 +283,12 @@ class ListeBabysitter extends Component
         $locationData = DB::table('babysitters')
             ->join('intervenants', 'babysitters.idBabysitter', '=', 'intervenants.IdIntervenant')
             ->join('utilisateurs', 'intervenants.IdIntervenant', '=', 'utilisateurs.idUser')
+            ->join('offres_services', 'intervenants.IdIntervenant', '=', 'offres_services.idIntervenant')
+            ->join('services', 'offres_services.idService', '=', 'services.idService')
             ->leftJoin('localisations', 'utilisateurs.idUser', '=', 'localisations.idUser')
             ->where('intervenants.statut', 'VALIDE')
+            ->where('offres_services.statut', 'ACTIVE')
+            ->where('services.nomService', 'Babysitting')
             ->select('babysitters.idBabysitter', 'utilisateurs.prenom', 'utilisateurs.nom', 
                      'localisations.latitude', 'localisations.longitude', 'localisations.ville', 
                      'babysitters.prixHeure', 'utilisateurs.photo', 'utilisateurs.note')
@@ -346,7 +354,12 @@ $babysittersMap = $limitedLocationData->map(function($babysitter) use ($defaultC
 \Log::info('Babysitters pour carte:', $babysittersMap);
 
 // Compter le nombre total de babysitters disponibles
-$totalBabysitters = Babysitter::valide()->count();
+$totalBabysitters = Babysitter::valide()
+    ->whereHas('intervenant.services', function ($q) {
+        $q->where('offres_services.statut', 'ACTIVE')
+          ->where('services.nomService', 'Babysitting');
+    })
+    ->count();
 
 return view('livewire.babysitter.liste-babysitter', [
     'babysitters' => $babysitters,
