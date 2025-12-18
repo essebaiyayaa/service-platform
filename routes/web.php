@@ -23,6 +23,7 @@ use App\Livewire\Tutoring\MesDemandes;
 use App\Livewire\Shared\Client\MesAvis;
 use App\Livewire\Shared\IntervenantHub;
 use App\Livewire\Tutoring\TutorDetails;
+use App\Livewire\Client\MesReclamations;
 use App\Livewire\Tutoring\ClientDetails;
 use App\Livewire\Shared\Admin\AdminUsers;
 use App\Livewire\Tutoring\BookingProcess;
@@ -35,29 +36,28 @@ use App\Livewire\PetKeeping\PetKeeperProfile;
 use App\Livewire\Shared\Admin\AdminDashboard;
 use App\Livewire\Tutoring\RegisterProfesseur;
 use App\Livewire\Babysitter\BabysitterBooking;
-use App\Livewire\Babysitter\BabysitterProfile;
 
 // Babysitter Livewire Components
+use App\Livewire\Babysitter\BabysitterProfile;
 use App\Livewire\PetKeeping\PetKeeperMissions;
 use App\Livewire\PetKeeping\PetKeeperDashboard;
 use App\Livewire\Shared\Admin\ReclamationsList;
 use App\Livewire\Babysitter\BabysitterDashboard;
 use App\Livewire\Shared\Admin\AdminIntervenants;
 use App\Livewire\Shared\RegisterIntervenantPage;
-use App\Livewire\Shared\Admin\IntervenantDetails;
-use App\Livewire\Shared\Admin\ReclamationDetails;
+use App\Livewire\PetKeeping\AddPetKeepingService;
 
 // PetKeeping Livewire Components
+use App\Livewire\Shared\Admin\IntervenantDetails;
+use App\Livewire\Shared\Admin\ReclamationDetails;
 use App\Livewire\Shared\Admin\TraiterReclamation;
 use App\Http\Controllers\Api\Auth\LoginController;
 use App\Livewire\Babysitter\BabysitterProfilePage;
 use App\Livewire\PetKeeping\PetKeeperRegistration;
-use App\Livewire\Babysitter\BabysitterRegistration;
-use App\Livewire\PetKeeping\PetKeeperMissionDetails;
 
-use App\Http\Controllers\Api\Auth\RegisterController;
-use App\Livewire\PetKeeping\PetkeepingServiceBooking;
-use App\Livewire\Babysitter\BabysitterRegistrationSuccess;
+use App\Livewire\Babysitter\BabysitterRegistration;
+use App\Livewire\PetKeeping\DisponibilitesPetKeeper;
+use App\Livewire\PetKeeping\PetKeeperMissionDetails;
 
 
 
@@ -73,15 +73,18 @@ Route::get('/mes-demandes', \App\Livewire\Client\MesDemandes::class)->name('clie
 |--------------------------------------------------------------------------
 */
 
+use App\Http\Controllers\Api\Auth\RegisterController;
+use App\Livewire\PetKeeping\PetkeepingServiceBooking;
+use App\Livewire\Babysitter\BabysitterRegistrationSuccess;
+use App\Livewire\PetKeeping\MesClients as PetKeeperClients;
 use App\Livewire\PetKeeping\MyServices as MyPetKeepingServices;
 use App\Livewire\PetKeeping\SearchService as PetKeepingService;
 use App\Livewire\PetKeeping\SingleService as SinglePetKeepingService;
 use App\Livewire\Tutoring\DisponibilitesPage as TutoringDisponibilitesPage;
 use App\Livewire\Babysitter\DisponibilitesPage as BabysitterDisponibilitesPage;
 use App\Livewire\PetKeeper\PetKeeperAvis;
-use App\Livewire\PetKeeping\AddPetKeepingService;
-use App\Livewire\PetKeeping\DisponibilitesPetKeeper;
-use App\Livewire\PetKeeping\MesClients as PetKeeperClients;
+
+
 
 
 
@@ -97,6 +100,7 @@ Route::get('/inscriptionClient', RegisterClientPage::class)->name('register.clie
 Route::get('/inscriptionProfesseur', RegisterProfesseur::class)->name('register.professeur');
 Route::get('/inscriptionBabysitter', BabysitterRegistration::class)->name('inscription.babysitter');
 Route::get('/babysitter-registration-success', BabysitterRegistrationSuccess::class)->name('babysitter-registration-success');
+
 
 // Public Babysitter Routes
 Route::get('/liste-babysitter', ListeBabysitter::class)->name('liste.babysitter');
@@ -132,6 +136,7 @@ Route::prefix('pet-keeper')->name('petkeeper.')->group(function () {
 Route::middleware(['auth'])->group(function () {
     // Profile
     Route::get('/profil', ProfilClient::class)->name('profile');
+    Route::get('/mes-reclamations', MesReclamations::class)->name('client.reclamations');
     
     // Intervenant Hub
     Route::get('/intervenant/hub', IntervenantHub::class)->name('intervenant.hub');
