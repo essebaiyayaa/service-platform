@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Database\Seeders\PetKeeping\PetKeepingSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,15 +15,21 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Créer un utilisateur test s'il n'existe pas
-        User::firstOrCreate(
-            ['email' => 'test@example.com'],
-            ['name' => 'Test User']
-        );
-
-        // Seed superpourvoirs first
+        $this->call([
+            // Services de base
+            ServiceSeeder::class,
+            
+            // Admin
+            AdminSeeder::class,
+            
+            // Matières et niveaux pour soutien scolaire
+            MatieresNiveauxSeeder::class,
+            
+            // PetKeeping (contient users, intervenants, services)
+            PetKeepingSeeder::class,
+                  TestUsersSeeder::class,
+        ]);
         
-
-       
+        $this->command->info('✅ Tous les seeders ont été exécutés avec succès !');
     }
 }
