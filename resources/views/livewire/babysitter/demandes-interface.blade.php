@@ -189,18 +189,25 @@
                                 @if($demande->statut === 'validée' && $selectedTab === 'validee')
                                     @php
                                         $hasFeedback = \App\Models\Feedback::where('idDemande', $demande->idDemande)->exists();
+                                        // Vérifier si la date souhaitée est passée
+                                        $datePassee = $demande->dateSouhaitee && \Carbon\Carbon::parse($demande->dateSouhaitee)->isPast();
                                         // Debug: pour vérifier les valeurs
-                                        error_log("Demande ID: " . $demande->idDemande . " - Has Feedback: " . ($hasFeedback ? 'YES' : 'NO') . " - Tab: " . $selectedTab);
+                                        error_log("Demande ID: " . $demande->idDemande . " - Has Feedback: " . ($hasFeedback ? 'YES' : 'NO') . " - Tab: " . $selectedTab . " - Date Passée: " . ($datePassee ? 'YES' : 'NO'));
                                     @endphp
-                                    @if(!$hasFeedback)
+                                    @if(!$hasFeedback && $datePassee)
                                         <button wire:click="giveFeedback({{ $demande->idDemande }})"
                                             class="flex-1 px-6 py-3 bg-[#B82E6E] text-white rounded-xl hover:bg-[#A02860] transition-all"
                                             style="font-weight: 700; box-shadow: 0 4px 20px rgba(184, 46, 110, 0.3);">
                                             Feedback
                                         </button>
                                     @else
-                                        <!-- Debug: feedback exists -->
-                                        <div class="text-xs text-gray-500">Feedback déjà donné</div>
+                                        @if($hasFeedback)
+                                            <!-- Debug: feedback exists -->
+                                            <div class="text-xs text-gray-500">Feedback déjà donné</div>
+                                        @elseif(!$datePassee)
+                                            <!-- Debug: date pas encore passée -->
+                                            <div class="text-xs text-gray-500">Date non passée</div>
+                                        @endif
                                     @endif
                                 @endif
                             </div>
