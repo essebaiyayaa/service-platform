@@ -173,6 +173,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('avis', BabysitterAvisPage::class)->name('babysitter.avis');
         Route::get('profile', BabysitterProfile::class)->name('babysitter.profile');
         Route::get('demandes', DemandesInterface::class)->name('demandes-sidebar');
+        Route::get('feedback/{id}', FeedbackBabysitter::class)->name('babysitter.feedback');
     });
 
     // General

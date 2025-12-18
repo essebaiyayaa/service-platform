@@ -278,7 +278,7 @@ class MesDemandes extends Component
             'matiere'      => $demandeInfo->nom_matiere ?? 'Soutien Scolaire',
             'niveau'       => $demandeInfo->nom_niveau ?? '',
             'prix'         => $demandeInfo->montant_total,
-            'type_service' => $demandeInfo->type_service,
+            'type_service' => 'Soutien Scolaire',
             'prof_nom'     => $prof->prenom . ' ' . $prof->nom,
             'prof_email'   => $prof->email,
             'prof_tel'     => $prof->telephone,

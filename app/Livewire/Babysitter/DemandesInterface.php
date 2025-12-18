@@ -24,6 +24,9 @@ class DemandesInterface extends Component
     public $maxPriceFilter = null;
     public $selectedServices = [];
     
+    // Filtre pour l'onglet archive
+    public $archiveFilter = 'all'; // all, confirmed, cancelled
+    
     // Nouveaux filtres
     public $datePeriod = 'all'; // all, today, week, month, custom
     public $timePeriod = 'all'; // all, matin, apres_midi, soir
@@ -48,7 +51,7 @@ class DemandesInterface extends Component
 
     public function viewDemande($id)
     {
-        $this->selectedDemande = DemandeIntervention::with(['client', 'service', 'enfants'])->find($id);
+        $this->selectedDemande = DemandeIntervention::with(['client.localisations', 'service', 'enfants.categorie'])->find($id);
         $this->showModal = true;
     }
 
@@ -117,6 +120,7 @@ class DemandesInterface extends Component
 
     public function giveFeedback($id)
     {
+        // Rediriger vers la page de feedback pour la demande spécifiée
         return redirect()->route('babysitter.feedback', ['id' => $id]);
     }
 
@@ -137,19 +141,19 @@ class DemandesInterface extends Component
         return [
             [
                 'label' => 'En attente',
-                'value' => DemandeIntervention::where('idIntervenant', $userId)->where('statut', 'en_attente')->count(),
+                'value' => DemandeIntervention::where('idIntervenant', $userId)->where('idService', 2)->where('statut', 'en_attente')->count(),
                 'color' => '#F59E0B',
                 'bgColor' => '#FEF3C7'
             ],
             [
                 'label' => 'Validées',
-                'value' => DemandeIntervention::where('idIntervenant', $userId)->where('statut', 'validée')->count(),
+                'value' => DemandeIntervention::where('idIntervenant', $userId)->where('idService', 2)->where('statut', 'validée')->count(),
                 'color' => '#10B981',
                 'bgColor' => '#D1FAE5'
             ],
             [
                 'label' => 'Refusées/Annulées',
-                'value' => DemandeIntervention::where('idIntervenant', $userId)->whereIn('statut', ['refusée', 'annulée'])->count(),
+                'value' => DemandeIntervention::where('idIntervenant', $userId)->where('idService', 2)->whereIn('statut', ['refusée', 'annulée'])->count(),
                 'color' => '#EF4444',
                 'bgColor' => '#FEE2E2'
             ]
@@ -161,6 +165,7 @@ class DemandesInterface extends Component
         $userId = Auth::id();
         $query = DemandeIntervention::with(['client', 'service', 'enfants'])
             ->where('idIntervenant', $userId)
+            ->where('idService', 2) // Filtrer uniquement les services de babysitting
             ->orderBy('dateDemande', 'desc');
 
         if ($this->selectedTab === 'en_attente') {
@@ -168,7 +173,25 @@ class DemandesInterface extends Component
         } elseif ($this->selectedTab === 'validee') {
             $query->where('statut', 'validée');
         } elseif ($this->selectedTab === 'archive') {
-            $query->whereIn('statut', ['refusée', 'annulée', 'terminée']);
+            // Afficher uniquement les demandes passées confirmées et les demandes annulées/refusées
+            $query->where(function($q) {
+                $q->where(function($subQ) {
+                    // Demandes confirmées dont la date est passée
+                    $subQ->where('statut', 'validée')
+                         ->where('dateSouhaitee', '<', now()->format('Y-m-d'));
+                })->orWhere(function($subQ) {
+                    // Demandes annulées ou refusées (peu importe la date)
+                    $subQ->whereIn('statut', ['annulée', 'refusée']);
+                });
+            });
+            
+            // Appliquer le filtre supplémentaire si spécifié
+            if ($this->archiveFilter === 'confirmed') {
+                $query->where('statut', 'validée')
+                      ->where('dateSouhaitee', '<', now()->format('Y-m-d'));
+            } elseif ($this->archiveFilter === 'cancelled') {
+                $query->whereIn('statut', ['annulée', 'refusée']);
+            }
         }
 
         if ($this->searchQuery) {
@@ -213,18 +236,31 @@ class DemandesInterface extends Component
             }
         }
 
+        // Filtre Ville
+        if ($this->cityFilter) {
+            $query->whereHas('client.localisations', function($q) {
+                $q->where('ville', 'like', "%{$this->cityFilter}%");
+            });
+        }
+
         // Filtre Catégories d'âge
         if (!empty($this->selectedAgeCategories)) {
-            $query->whereHas('enfants', function($q) {
-                foreach ($this->selectedAgeCategories as $category) {
-                    // Mapping approximatif des catégories basées sur l'âge
-                    if ($category === 'nourrisson') $q->orWhereRaw('TIMESTAMPDIFF(YEAR, dateNaissance, CURDATE()) < 1');
-                    elseif ($category === 'bambin') $q->orWhereRaw('TIMESTAMPDIFF(YEAR, dateNaissance, CURDATE()) BETWEEN 1 AND 3');
-                    elseif ($category === 'maternelle') $q->orWhereRaw('TIMESTAMPDIFF(YEAR, dateNaissance, CURDATE()) BETWEEN 4 AND 5');
-                    elseif ($category === 'ecolier') $q->orWhereRaw('TIMESTAMPDIFF(YEAR, dateNaissance, CURDATE()) BETWEEN 6 AND 12');
-                    elseif ($category === 'adolescent') $q->orWhereRaw('TIMESTAMPDIFF(YEAR, dateNaissance, CURDATE()) >= 13');
-                }
-            });
+            $categoryMap = [
+                'nourrisson' => 1,
+                'bambin' => 2,
+                'maternelle' => 3,
+                'ecolier' => 4,
+                'adolescent' => 5,
+            ];
+            
+            $selectedIds = array_map(fn($cat) => $categoryMap[$cat] ?? null, $this->selectedAgeCategories);
+            $selectedIds = array_filter($selectedIds);
+
+            if (!empty($selectedIds)) {
+                $query->whereHas('enfants', function($q) use ($selectedIds) {
+                    $q->whereIn('id_categorie', $selectedIds);
+                });
+            }
         }
 
         // Filtre Besoins Spécifiques
@@ -250,17 +286,19 @@ class DemandesInterface extends Component
         if (!empty($this->selectedServices)) {
             $query->where(function($q) {
                 foreach ($this->selectedServices as $service) {
-                    $q->orWhere('note_speciales', 'like', "%{$service}%");
+                    $q->orWhere('note_speciales', 'like', "%{$service}%")
+                      ->orWhereHas('enfants', function($sq) use ($service) {
+                          $sq->where('besoinsSpecifiques', 'like', "%{$service}%");
+                      });
                 }
             });
         }
 
         $demandes = $query->get();
 
-        // Post-query filtering
-        if ($this->minPriceFilter || $this->maxPriceFilter || $this->cityFilter) {
+        // Post-query filtering for Price (since it depends on duration and babysitter rate)
+        if ($this->minPriceFilter || $this->maxPriceFilter) {
             $demandes = $demandes->filter(function ($demande) {
-                // Price Filter
                 $hourlyRate = $this->babysitter->prixHeure ?? 50;
                 $duration = 0;
                 if($demande->heureDebut && $demande->heureFin) {
@@ -272,17 +310,16 @@ class DemandesInterface extends Component
                 if ($this->minPriceFilter && $totalPrice < $this->minPriceFilter) return false;
                 if ($this->maxPriceFilter && $totalPrice > $this->maxPriceFilter) return false;
 
-                // City Filter
-                if ($this->cityFilter) {
-                    $clientCity = $demande->client->localisations->first()->ville ?? '';
-                    if (stripos($clientCity, $this->cityFilter) === false) return false;
-                }
-
                 return true;
             });
         }
 
         return $demandes;
+    }
+
+    public function setArchiveFilter($filter)
+    {
+        $this->archiveFilter = $filter;
     }
 
     public function toggleAgeCategory($category)

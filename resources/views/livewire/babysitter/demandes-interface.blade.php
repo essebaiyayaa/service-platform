@@ -38,129 +38,28 @@
                 </button>
             </div>
 
-            <!-- Filtres -->
-            <div class="bg-white rounded-2xl p-6 mb-8 border border-gray-100" style="box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-lg" style="font-weight: 800; color: #0a0a0a;">
-                        Filtres
-                    </h2>
-                    <button wire:click="toggleAdvancedFilters" class="text-sm font-semibold text-[#B82E6E] hover:underline">
-                        {{ $showAdvancedFilters ? 'Masquer filtres avancés' : 'Afficher filtres avancés' }}
-                    </button>
-                </div>
-
-                <div class="grid md:grid-cols-3 gap-6">
-                    <!-- Période Date -->
-                    <div>
-                        <label class="block text-sm mb-2" style="color: #0a0a0a; font-weight: 600;">Période</label>
-                        <select wire:model.live="datePeriod" class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#B82E6E]">
-                            <option value="all">Toutes les dates</option>
-                            <option value="today">Aujourd'hui</option>
-                            <option value="week">Cette semaine</option>
-                            <option value="month">Ce mois</option>
-                            <option value="custom">Date personnalisée</option>
-                        </select>
-                        @if($datePeriod === 'custom')
-                            <input type="date" wire:model.live="dateFilter" class="mt-2 w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#B82E6E]">
-                        @endif
-                    </div>
-
-                    <!-- Moment de la journée -->
-                    <div>
-                        <label class="block text-sm mb-2" style="color: #0a0a0a; font-weight: 600;">Moment de la journée</label>
-                        <select wire:model.live="timePeriod" class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#B82E6E]">
-                            <option value="all">Tout moment</option>
-                            <option value="matin">Matin (< 12h)</option>
-                            <option value="apres_midi">Après-midi (12h-18h)</option>
-                            <option value="soir">Soir (> 18h)</option>
-                        </select>
-                    </div>
-
-                    <!-- Ville -->
-                    <div>
-                        <label class="block text-sm mb-2" style="color: #0a0a0a; font-weight: 600;">Ville</label>
-                        <input type="text" wire:model.live="cityFilter" placeholder="Ex: Casablanca" class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#B82E6E]">
+            <!-- Filtre Archive (uniquement visible dans l'onglet archive) -->
+            @if($selectedTab === 'archive')
+                <div class="bg-white rounded-2xl p-4 mb-6 border border-gray-100" style="box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);">
+                    <div class="flex gap-2">
+                        <button wire:click="setArchiveFilter('all')"
+                            class="px-4 py-2 rounded-lg text-sm transition-all {{ $archiveFilter === 'all' ? 'bg-[#B82E6E] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}"
+                            style="font-weight: 600;">
+                            Tout
+                        </button>
+                        <button wire:click="setArchiveFilter('confirmed')"
+                            class="px-4 py-2 rounded-lg text-sm transition-all {{ $archiveFilter === 'confirmed' ? 'bg-[#B82E6E] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}"
+                            style="font-weight: 600;">
+                            Confirmés
+                        </button>
+                        <button wire:click="setArchiveFilter('cancelled')"
+                            class="px-4 py-2 rounded-lg text-sm transition-all {{ $archiveFilter === 'cancelled' ? 'bg-[#B82E6E] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}"
+                            style="font-weight: 600;">
+                            Annulés
+                        </button>
                     </div>
                 </div>
-
-                @if($showAdvancedFilters)
-                <div class="mt-6 pt-6 border-t border-gray-100 grid md:grid-cols-2 gap-6">
-                    <!-- Catégories d'âge -->
-                    <div>
-                        <label class="block text-sm mb-2" style="color: #0a0a0a; font-weight: 600;">Catégories d'âge</label>
-                        <div class="flex flex-wrap gap-2">
-                            @foreach(['nourrisson' => 'Nourrisson', 'bambin' => 'Bambin', 'maternelle' => 'Maternelle', 'ecolier' => 'Écolier', 'adolescent' => 'Adolescent'] as $key => $label)
-                                <button wire:click="toggleAgeCategory('{{ $key }}')"
-                                    class="px-3 py-1 rounded-lg text-sm transition-all {{ in_array($key, $selectedAgeCategories) ? 'bg-[#F9E0ED] text-[#B82E6E] border border-[#B82E6E]' : 'bg-gray-50 text-gray-600 border border-transparent hover:bg-gray-100' }}">
-                                    {{ $label }}
-                                </button>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    <!-- Nombre d'enfants -->
-                    <div>
-                        <label class="block text-sm mb-2" style="color: #0a0a0a; font-weight: 600;">Nombre d'enfants</label>
-                        <div class="flex gap-2">
-                            @foreach(['1', '2', '3', '4+'] as $num)
-                            <button wire:click="setChildrenFilter('{{ $num }}')"
-                                class="px-4 py-1 rounded-lg text-sm transition-all {{ $childrenCountFilter === $num ? 'bg-[#F9E0ED] text-[#B82E6E] border border-[#B82E6E]' : 'bg-gray-50 text-gray-600 border border-transparent hover:bg-gray-100' }}">
-                                {{ $num }}
-                            </button>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    <!-- Tarif -->
-                    <div>
-                        <label class="block text-sm mb-2" style="color: #0a0a0a; font-weight: 600;">Tarif total (MAD)</label>
-                        <div class="flex gap-2">
-                            <input type="number" placeholder="Min" wire:model.live="minPriceFilter" class="w-1/2 px-3 py-2 border border-gray-200 rounded-xl text-sm">
-                            <input type="number" placeholder="Max" wire:model.live="maxPriceFilter" class="w-1/2 px-3 py-2 border border-gray-200 rounded-xl text-sm">
-                        </div>
-                    </div>
-
-                    <!-- Note Client -->
-                    <div>
-                        <label class="block text-sm mb-2" style="color: #0a0a0a; font-weight: 600;">Note Client Min.</label>
-                        <select wire:model.live="clientMinRating" class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm">
-                            <option value="">Peu importe</option>
-                            <option value="3">3+ étoiles</option>
-                            <option value="4">4+ étoiles</option>
-                            <option value="4.5">4.5+ étoiles</option>
-                        </select>
-                    </div>
-
-                    <!-- Options supplémentaires -->
-                    <div class="md:col-span-2">
-                        <label class="block text-sm mb-2" style="color: #0a0a0a; font-weight: 600;">Options</label>
-                        <div class="flex gap-4">
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" wire:model.live="hasSpecialNeeds" class="rounded text-[#B82E6E] focus:ring-[#B82E6E]">
-                                <span class="text-sm text-gray-700">Enfants à besoins spécifiques</span>
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" wire:model.live="hasSpecialNotes" class="rounded text-[#B82E6E] focus:ring-[#B82E6E]">
-                                <span class="text-sm text-gray-700">Avec notes spéciales</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Services -->
-                    <div class="md:col-span-2">
-                        <label class="block text-sm mb-2" style="color: #0a0a0a; font-weight: 600;">Compétences requises</label>
-                        <div class="flex flex-wrap gap-2">
-                            @foreach(['Dessin', 'Travaux manuels', 'Faire la lecture', 'Jeux', 'Musique', 'Cuisine', 'Tâches ménagères', 'Aides aux devoirs'] as $service)
-                            <button wire:click="toggleService('{{ $service }}')"
-                                class="px-3 py-1 rounded-lg text-sm transition-all {{ in_array($service, $selectedServices) ? 'bg-[#F9E0ED] text-[#B82E6E] border border-[#B82E6E]' : 'bg-gray-50 text-gray-600 border border-transparent hover:bg-gray-100' }}">
-                                {{ $service }}
-                            </button>
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-                @endif
-            </div>
+            @endif
 
             <!-- Liste des demandes -->
             <div class="space-y-4">
@@ -238,107 +137,74 @@
                                     <span style="color: #0a0a0a; font-weight: 700;">
                                         {{ $demande->heureDebut ? $demande->heureDebut->format('H:i') : '--:--' }} - {{ $demande->heureFin ? $demande->heureFin->format('H:i') : '--:--' }}
                                     </span>
+                            </div>
+
+                            <!-- Détails -->
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <p class="text-sm text-gray-500">Heure</p>
+                                    <p class="font-semibold" style="color: #0a0a0a;">
+                                        {{ $demande->heureDebut ? \Carbon\Carbon::parse($demande->heureDebut)->format('H:i') : 'Non spécifiée' }} - 
+                                        {{ $demande->heureFin ? \Carbon\Carbon::parse($demande->heureFin)->format('H:i') : 'Non spécifiée' }}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Tarif estimé</p>
+                                    <p class="font-semibold" style="color: #0a0a0a;">
+                                        {{ $totalPrice }} MAD
+                                    </p>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Informations enfants -->
-                        <div class="mb-4">
-                            <p class="text-sm mb-2" style="color: #6b7280; font-weight: 600;">
-                                Enfants à garder :
-                            </p>
-                            <div class="flex flex-wrap gap-2">
-                                @forelse($demande->enfants as $enfant)
-                                    <div class="px-4 py-2 bg-[#E1EAF7] rounded-xl">
-                                        <span style="color: #2B5AA8; font-weight: 700;">
-                                            {{ $enfant->nomComplet }} ({{ $enfant->age ?? '?' }} ans)
-                                            @if(($enfant->age ?? 0) <= 3) 👶 @elseif(($enfant->age ?? 0) <= 10) 🧒 @else 👦 @endif
-                                        </span>
-                                    </div>
-                                @empty
-                                    <span class="text-gray-500 text-sm italic">Non spécifié</span>
-                                @endforelse
-                            </div>
-                        </div>
-
-                        <!-- Tarif -->
-                        <div class="flex items-center gap-4 mb-4 p-4 bg-green-50 rounded-xl">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="12" y1="1" x2="12" y2="23"></line>
-                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                            </svg>
-                            <div>
-                                <span class="text-sm" style="color: #6b7280; font-weight: 600;">
-                                    Tarif Total :
-                                </span>
-                                <span class="ml-2 text-lg" style="color: #000000; font-weight: 800;">
-                                    {{ $hourlyRate * ($childrenCount > 0 ? $childrenCount : 1) }} MAD
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- Services demandés -->
-                        <div class="mb-4">
-                            <p class="text-sm mb-2" style="color: #6b7280; font-weight: 600;">
-                                Services demandés :
-                            </p>
-                            <div class="flex flex-wrap gap-2">
-                                @if($demande->service)
-                                    <span class="px-3 py-1 bg-[#F9E0ED] rounded-lg text-sm"
-                                        style="color: #B82E6E; font-weight: 700;">
-                                        {{ $demande->service->nomService }}
-                                    </span>
+                            <!-- Actions -->
+                            <div class="flex gap-3">
+                                @if($demande->statut === 'en_attente')
+                                    <button wire:click="acceptDemande({{ $demande->idDemande }})"
+                                        class="flex-1 px-6 py-3 bg-[#B82E6E] text-white rounded-xl hover:bg-[#A02860] transition-all"
+                                        style="font-weight: 700; box-shadow: 0 4px 20px rgba(184, 46, 110, 0.3);">
+                                        Accepter
+                                    </button>
                                 @endif
-                                <!-- Placeholder for other services if available in model -->
-                            </div>
-                        </div>
-
-                        <!-- Description -->
-                        @if($demande->note_speciales)
-                            <p class="mb-4 p-4 bg-gray-50 rounded-xl" style="color: #3a3a3a; font-weight: 600;">
-                                {{ $demande->note_speciales }}
-                            </p>
-                        @endif
-
-                        <!-- Actions -->
-                        <div class="flex gap-3">
-                            @if($demande->statut === 'en_attente')
-                                <button wire:click="acceptDemande({{ $demande->idDemande }})"
-                                    class="flex-1 px-6 py-3 bg-[#B82E6E] text-white rounded-xl hover:bg-[#A02860] transition-all"
-                                    style="font-weight: 700; box-shadow: 0 4px 20px rgba(184, 46, 110, 0.3);">
-                                    Accepter
-                                </button>
-                            @endif
-                            
-                            <button wire:click="viewDemande({{ $demande->idDemande }})"
-                                class="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all"
-                                style="font-weight: 700;">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                    <circle cx="12" cy="12" r="3"></circle>
-                                </svg>
-                            </button>
-
-                            @if($demande->statut === 'en_attente')
-                                <button wire:click="refuseDemande({{ $demande->idDemande }})"
-                                    class="px-6 py-3 bg-red-100 text-red-600 rounded-xl hover:bg-red-200 transition-all"
+                                
+                                <button wire:click="viewDemande({{ $demande->idDemande }})"
+                                    class="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all"
                                     style="font-weight: 700;">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
                                     </svg>
                                 </button>
-                            @endif
 
-                            @if($demande->statut === 'validée')
-                                <button wire:click="giveFeedback({{ $demande->idDemande }})"
-                                    class="flex-1 px-6 py-3 bg-[#B82E6E] text-white rounded-xl hover:bg-[#A02860] transition-all"
-                                    style="font-weight: 700; box-shadow: 0 4px 20px rgba(184, 46, 110, 0.3);">
-                                    Feedback
-                                </button>
-                            @endif
+                                @if($demande->statut === 'en_attente')
+                                    <button wire:click="refuseDemande({{ $demande->idDemande }})"
+                                        class="px-6 py-3 bg-red-100 text-red-600 rounded-xl hover:bg-red-200 transition-all"
+                                        style="font-weight: 700;">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        </svg>
+                                    </button>
+                                @endif
+
+                                @if($demande->statut === 'validée' && $selectedTab === 'validee')
+                                    @php
+                                        $hasFeedback = \App\Models\Feedback::where('idDemande', $demande->idDemande)->exists();
+                                        // Debug: pour vérifier les valeurs
+                                        error_log("Demande ID: " . $demande->idDemande . " - Has Feedback: " . ($hasFeedback ? 'YES' : 'NO') . " - Tab: " . $selectedTab);
+                                    @endphp
+                                    @if(!$hasFeedback)
+                                        <button wire:click="giveFeedback({{ $demande->idDemande }})"
+                                            class="flex-1 px-6 py-3 bg-[#B82E6E] text-white rounded-xl hover:bg-[#A02860] transition-all"
+                                            style="font-weight: 700; box-shadow: 0 4px 20px rgba(184, 46, 110, 0.3);">
+                                            Feedback
+                                        </button>
+                                    @else
+                                        <!-- Debug: feedback exists -->
+                                        <div class="text-xs text-gray-500">Feedback déjà donné</div>
+                                    @endif
+                                @endif
+                            </div>
                         </div>
-                    </div>
                 @empty
                     <div class="p-12 text-center bg-white rounded-2xl border border-gray-100">
                         <svg class="mx-auto mb-4 text-gray-400" width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
