@@ -45,23 +45,15 @@
                             $gradient = 'from-pink-500 to-rose-500';
                             $shadow = 'shadow-pink-200';
                             $btnText = 'text-pink-600';
-                        } elseif (str_contains(strtolower($service->nomService), 'pet') || str_contains(strtolower($service->nomService), 'animaux')) {
+                        } else {
                             $route = route('petkeeper.dashboard');
                             $icon = '🐾';
-                            $title = 'Pet Keeping';
-                            $desc = 'Gestion de la garde d\'animaux';
+                            $title = 'PetKeeping';
+                            $desc = 'Gestion de votre service de garde d\'animaux';
                             $gradient = 'from-emerald-500 to-green-500';
                             $shadow = 'shadow-green-200';
                             $btnText = 'text-green-600';
-                        } else {
-                            $route = route('intervenant.hub');
-                            $icon = '📋';
-                            $title = $service->nomService;
-                            $desc = 'Gestion de votre activité';
-                            $gradient = 'from-gray-500 to-gray-600';
-                            $shadow = 'shadow-gray-200';
-                            $btnText = 'text-gray-600';
-                        }
+                        } 
                         
                         // Récupérer le statut du service
                         $user = Auth::user();
