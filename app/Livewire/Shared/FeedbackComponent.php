@@ -235,6 +235,7 @@ class FeedbackComponent extends Component
                 'ponctualite' => $this->ponctualite,
                 'proprete' => $this->proprete,
                 'qualiteTravail' => $this->communication,
+                'moyenne' => $noteMoyenne, // Ajout de la moyenne calculée
                 'estVisible' => true,
                 'dateCreation' => now(),
                 'idDemande' => $idDemandeToUse,
