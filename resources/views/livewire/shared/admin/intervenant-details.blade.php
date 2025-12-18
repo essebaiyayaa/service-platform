@@ -322,11 +322,29 @@
                                         </div>
                                     </div>
 
-                                    @if($petkeeperData->certifications && count($petkeeperData->certifications) > 0)
+                                    @if(isset($petkeeperData->documents) && $petkeeperData->documents->count() > 0)
                                         <div class="pt-4 border-t border-gray-100">
-                                            <p class="text-sm font-semibold text-gray-900 mb-4">🏆 Certifications</p>
+                                            <p class="text-sm font-semibold text-gray-900 mb-4">📂 Documents fournis</p>
                                             <div class="space-y-3">
-                                                @foreach($petkeeperData->certifications as $cert)
+                                                @foreach($petkeeperData->documents as $doc)
+                                                    <div class="py-3 px-4 bg-gray-50 rounded-lg flex items-center justify-between">
+                                                        <span class="text-sm font-medium text-gray-900">{{ $doc['label'] }}</span>
+                                                        <a href="{{ asset('storage/' . $doc['path']) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm font-semibold">Voir</a>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    @php
+                                        $otherCerts = $petkeeperData->otherCertifications ?? $petkeeperData->certifications;
+                                    @endphp
+
+                                    @if($otherCerts && count($otherCerts) > 0)
+                                        <div class="pt-4 border-t border-gray-100">
+                                            <p class="text-sm font-semibold text-gray-900 mb-4">🏆 Autres certifications</p>
+                                            <div class="space-y-3">
+                                                @foreach($otherCerts as $cert)
                                                     <div class="py-3 px-4 bg-gray-50 rounded-lg flex items-center justify-between">
                                                         <p class="text-sm font-medium text-gray-900">{{ $cert->certification }}</p>
                                                         @if(!empty($cert->document))
