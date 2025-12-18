@@ -94,8 +94,12 @@ class AdminIntervenants extends Component
         // Charger les données spécifiques pour chaque offre
         foreach ($intervenants as $intervenant) {
             $this->loadOffreTypeData($intervenant);
-            // Mapper le statut combiné (offre si dispo sinon intervenant)
-            $intervenant->statut = $intervenant->offre_statut ?? $intervenant->intervenant_statut;
+            // Statut affiché : priorise l'état de l'intervenant si encore en attente
+            if (($intervenant->intervenant_statut ?? null) === 'EN_ATTENTE') {
+                $intervenant->statut = 'EN_ATTENTE';
+            } else {
+                $intervenant->statut = $intervenant->offre_statut ?? $intervenant->intervenant_statut;
+            }
             // Injecter un idService résolu si absent (pour activer le lien détails)
             if (empty($intervenant->idService) && isset($intervenant->derivedServiceId)) {
                 $intervenant->idService = $intervenant->derivedServiceId;
