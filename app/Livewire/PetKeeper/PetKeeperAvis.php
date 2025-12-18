@@ -14,7 +14,9 @@ class PetKeeperAvis extends Component
     public $demandeId;
     public $auteurId;
     public $cibleId;
-    public $typeAuteur;
+    public $typeAuteur = 'petkeeping';
+    public $typeService; // babysitter, tutoring, petkeeping
+    public $serviceId; // ID du service associé
 
     // Informations de la demande
     public $demande;
@@ -58,27 +60,40 @@ class PetKeeperAvis extends Component
         'proprete.required' => 'Veuillez noter la propreté',
     ];
 
-    public function mount($demandeId = null, $auteurId = null, $cibleId = null, $typeAuteur = 'intervenant')
+    public function mount($idService = null, $demandeId = null, $auteurId = null, $cibleId = null, $typeAuteur = 'client')
     {
-        // Valider les paramètres requis
-        if (!$demandeId || !$auteurId || !$cibleId) {
-            session()->flash('error', 'Paramètres manquants: demandeId, auteurId et cibleId sont requis');
+        
+        \Log::info('Feedback mount - Parameters: ', [
+            'idService' => $idService,
+            'demandeId' => $demandeId,
+            'auteurId' => $auteurId,
+            'cibleId' => $cibleId,
+            'typeAuteur' => $typeAuteur
+        ]);
+        
+        
+        if (!$idService || !$demandeId || !$auteurId || !$cibleId) {
+            session()->flash('error', 'Paramètres manquants: idService, demandeId, auteurId et cibleId sont requis');
             return;
         }
         
+        $this->serviceId = $idService;
         $this->demandeId = $demandeId;
         $this->auteurId = $auteurId;
         $this->cibleId = $cibleId;
         $this->typeAuteur = $typeAuteur;
-
-        // Charger les données depuis la base
+        
         $this->loadData();
+        
+        \Log::info('Feedback mount - Service type detected: ' . $this->typeService);
     }
+
+   
 
     private function loadData()
     {
         try {
-            // Charger la demande depuis la base de données
+            // Charger la demande depuis demandes_intervention pour tous les services
             $this->demande = DemandesIntervention::find($this->demandeId);
             
             if (!$this->demande) {
@@ -163,6 +178,10 @@ class PetKeeperAvis extends Component
         try {
             DB::beginTransaction();
 
+            // Vérifier si la demande existe
+            $demandeExists = DB::table('demandes_intervention')->where('idDemande', $this->demandeId)->exists();
+            $idDemandeToUse = $demandeExists ? $this->demandeId : null;
+
             // Calculer la note moyenne
             $noteMoyenne = ($this->ponctualite + $this->professionnalisme + 
                            $this->relationAvecEnfants + $this->communication + 
@@ -181,7 +200,8 @@ class PetKeeperAvis extends Component
                 'qualiteTravail' => $this->communication,
                 'estVisible' => true,
                 'dateCreation' => now(),
-                'idDemande' => $this->demandeId,
+                'idDemande' => $idDemandeToUse,
+                'idService' => $this->serviceId,
             ]);
 
             // Mettre à jour la note de l'utilisateur cible

@@ -296,7 +296,7 @@
                                 <!-- Action Button -->
                                 <div class="flex gap-3">
                                     @if($mission->statut == 'validée')
-                                       <a href="/pet-keeper/dashboard/mon-avis/{{ $mission->idDemande }}/{{ $user->idUser }}/{{ $mission->idClient }}"
+                                       <a href="/pet-keeper/dashboard/mon-avis/{{ $mission->idService }}/{{ $mission->idDemande }}/{{ $user->idUser }}/{{ $mission->idClient }}/intervenant"
                                         class="flex-1 px-4 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm flex items-center justify-center gap-2">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 

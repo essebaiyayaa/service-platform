@@ -178,7 +178,7 @@ Route::prefix('pet-keeper')->name('petkeeper.')->group(function () {
     Route::get('/dashboard/clients', PetKeeperClients::class)->name('clients');
     Route::get('/dashboard/service/{serviceId}', SinglePetKeepingService::class)->name('services.show');
     Route::get('/dashboard/add-service', AddPetKeepingService::class)->name('addservice');
-    Route::get('/dashboard/mon-avis/{demandeId}/{auteurId}/{cibleId}', PetKeeperAvis::class);
+    Route::get('/dashboard/mon-avis/{idService}/{demandeId}/{auteurId}/{cibleId}/{typeAuteur?}', PetKeeperAvis::class);
 
 });
 // Admin Routes
