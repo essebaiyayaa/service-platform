@@ -124,7 +124,7 @@
                 <!-- Charts Section -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                     <!-- Monthly Earnings Chart -->
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100" wire:ignore>
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100" >
                         <h3 class="text-lg font-semibold text-gray-800 mb-4">Revenus mensuels</h3>
                         <div class="h-64">
                             <canvas id="earningsChart"></canvas>
@@ -132,7 +132,7 @@
                     </div>
 
                     <!-- Rating Distribution Chart -->
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100" wire:ignore>
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100" >
                         <h3 class="text-lg font-semibold text-gray-800 mb-4">Distribution des notes</h3>
                         <div class="h-64">
                             <canvas id="ratingChart"></canvas>
@@ -141,7 +141,7 @@
                 </div>
 
                 <!-- Performance Metrics -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="grid grid-cols-1 gap-6 mb-8">
                     <!-- Response Rate -->
                     <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                         <h3 class="text-lg font-semibold text-gray-800 mb-4">Taux de réponse</h3>
@@ -162,25 +162,7 @@
                         <p class="text-center text-gray-600 mt-4">Des demandes acceptées/refusées</p>
                     </div>
 
-                    <!-- On Time Rate -->
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Ponctualité</h3>
-                        <div class="flex items-center justify-center">
-                            <div class="relative w-32 h-32">
-                                <svg class="w-32 h-32 transform -rotate-90">
-                                    <circle cx="64" cy="64" r="56" stroke="#e5e7eb" stroke-width="12" fill="none" />
-                                    <circle cx="64" cy="64" r="56" stroke="#E89BC4" stroke-width="12" fill="none"
-                                        stroke-dasharray="{{ 351.86 * $statistics['onTimeRate'] / 100 }} 351.86"
-                                        stroke-linecap="round" />
-                                </svg>
-                                <div class="absolute inset-0 flex items-center justify-center">
-                                    <span
-                                        class="text-2xl font-bold text-gray-800">{{ $statistics['onTimeRate'] }}%</span>
-                                </div>
-                            </div>
-                        </div>
-                        <p class="text-center text-gray-600 mt-4">Des gardes à l'heure</p>
-                    </div>
+
                 </div>
 
 
@@ -194,92 +176,115 @@
 <!-- Chart.js Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    let earningsChart = null;
-    let ratingChart = null;
+    // Setup chart init and update handlers for Livewire navigation/load
+    (function () {
+        let earningsChart = null;
+        let ratingChart = null;
 
-    function initEarningsChart(data) {
-        if (earningsChart) { earningsChart.destroy(); }
-        const ctx = document.getElementById('earningsChart').getContext('2d');
-        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-        gradient.addColorStop(0, 'rgba(143, 36, 88, 0.3)');
-        gradient.addColorStop(1, 'rgba(245, 208, 227, 0.1)');
+        function initEarningsChart(data) {
+            const canvas = document.getElementById('earningsChart');
+            if (!canvas) return;
 
-        earningsChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: data.map(i => i.month),
-                datasets: [{
-                    label: 'Revenus (MAD)',
-                    data: data.map(i => i.earnings),
-                    borderColor: '#8F2458',
-                    backgroundColor: gradient,
-                    borderWidth: 3,
-                    fill: true,
-                    pointBackgroundColor: '#8F2458',
-                    pointBorderColor: '#FFFFFF',
-                    pointBorderWidth: 2,
-                    pointRadius: 5,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { beginAtZero: true, ticks: { color: '#8F2458' } },
-                    x: { ticks: { color: '#8F2458' } }
-                }
+            if (earningsChart) {
+                earningsChart.destroy();
+                earningsChart = null;
             }
-        });
-    }
 
-    function initRatingChart(data) {
-        if (ratingChart) { ratingChart.destroy(); }
-        const ctx = document.getElementById('ratingChart').getContext('2d');
-        ratingChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: data.map(i => i.label),
-                datasets: [{
-                    label: 'Nombre d\'avis',
-                    data: data.map(i => i.count),
-                    backgroundColor: [
-                        'rgba(251, 191, 36, 0.8)',
-                        'rgba(251, 191, 36, 0.7)',
-                        'rgba(251, 191, 36, 0.6)',
-                        'rgba(251, 191, 36, 0.5)',
-                        'rgba(251, 191, 36, 0.4)'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            const ctx = canvas.getContext('2d');
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(143, 36, 88, 0.3)');
+            gradient.addColorStop(1, 'rgba(245, 208, 227, 0.1)');
+
+            earningsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: (data || []).map(i => i.month),
+                    datasets: [{
+                        label: 'Revenus (MAD)',
+                        data: (data || []).map(i => i.earnings),
+                        borderColor: '#8F2458',
+                        backgroundColor: gradient,
+                        borderWidth: 3,
+                        fill: true,
+                        pointBackgroundColor: '#8F2458',
+                        pointBorderColor: '#FFFFFF',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { color: '#8F2458' } },
+                        x: { ticks: { color: '#8F2458' } }
+                    }
                 }
+            });
+        }
+
+        function initRatingChart(data) {
+            const canvas = document.getElementById('ratingChart');
+            if (!canvas) return;
+
+            if (ratingChart) {
+                ratingChart.destroy();
+                ratingChart = null;
             }
-        });
-    }
 
-    document.addEventListener('livewire:init', () => {
-        // Initial load
-        initEarningsChart(@json($monthlyEarnings));
-        initRatingChart(@json($ratingDistribution));
+            const ctx = canvas.getContext('2d');
+            ratingChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: (data || []).map(i => i.label),
+                    datasets: [{
+                        label: "Nombre d'avis",
+                        data: (data || []).map(i => i.count),
+                        backgroundColor: [
+                            'rgba(251, 191, 36, 0.8)',
+                            'rgba(251, 191, 36, 0.7)',
+                            'rgba(251, 191, 36, 0.6)',
+                            'rgba(251, 191, 36, 0.5)',
+                            'rgba(251, 191, 36, 0.4)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    }
+                }
+            });
+        }
 
-        // Re-init on DOM updates (simplest fix for disappearing charts on poll)
-        Livewire.hook('morph.updated', ({ el, component }) => {
-             // Optional: specific check
-        });
+        function setupCharts() {
+            // Initialize with server-rendered data if present
+            try {
+                initEarningsChart({!! json_encode($monthlyEarnings) !!});
+                initRatingChart({!! json_encode($ratingDistribution) !!});
+            } catch (e) {
+                // in some navigation flows the server-rendered JSON may not be present; ignore
+            }
 
-        // Listen for specific chart updates from Livewire
-        Livewire.on('updateCharts', (data) => {
-             if(data && data[0]) {
-                 initEarningsChart(data[0].monthlyEarnings);
-                 initRatingChart(data[0].ratingDistribution);
-             }
-        });
-    });
+            // Listen for updates emitted by the Livewire component
+            Livewire.on('updateCharts', (payload) => {
+                // payload may be an object with keys or an array wrapper; handle both
+                const data = payload && payload.monthlyEarnings ? payload : (Array.isArray(payload) ? payload[0] : payload);
+                if (!data) return;
+                initEarningsChart(data.monthlyEarnings || []);
+                initRatingChart(data.ratingDistribution || []);
+            });
+        }
+
+        document.addEventListener('livewire:load', setupCharts);
+        document.addEventListener('livewire:navigated', setupCharts);
+        // also in case of simple full page load
+        document.addEventListener('DOMContentLoaded', setupCharts);
+    })();
 </script>
+</div>

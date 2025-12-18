@@ -31,7 +31,7 @@ class BabysitterDashboard extends Component
                 'pendingRequests' => 0,
                 'totalEarnings' => 0,
                 'responseRate' => 0,
-                'onTimeRate' => 0,
+
             ];
             $this->monthlyEarnings = [];
             $this->ratingDistribution = [];
@@ -47,7 +47,7 @@ class BabysitterDashboard extends Component
                 'pendingRequests' => 0,
                 'totalEarnings' => 0,
                 'responseRate' => 0,
-                'onTimeRate' => 0,
+
             ];
             $this->monthlyEarnings = [];
             $this->ratingDistribution = [];
@@ -108,7 +108,6 @@ class BabysitterDashboard extends Component
             'pendingRequests' => $pendingRequests,
             'totalEarnings' => max(0, $totalEarnings), // Ensure no negative earnings
             'responseRate' => $this->calculateResponseRateForUser($userId),
-            'onTimeRate' => 95.5,
         ];
     }
 
@@ -133,7 +132,7 @@ class BabysitterDashboard extends Component
                 'pendingRequests' => 0,
                 'totalEarnings' => 0,
                 'responseRate' => 0,
-                'onTimeRate' => 0,
+
             ];
             $this->monthlyEarnings = [];
             $this->ratingDistribution = [];
@@ -150,7 +149,7 @@ class BabysitterDashboard extends Component
                 'pendingRequests' => 0,
                 'totalEarnings' => 0,
                 'responseRate' => 0,
-                'onTimeRate' => 0,
+
             ];
             $this->monthlyEarnings = [];
             $this->ratingDistribution = [];
@@ -221,7 +220,6 @@ class BabysitterDashboard extends Component
             'pendingRequests' => $pendingRequests,
             'totalEarnings' => $totalEarnings,
             'responseRate' => $this->calculateResponseRate(),
-            'onTimeRate' => $this->calculateOnTimeRate(),
         ];
     }
 
@@ -235,11 +233,7 @@ class BabysitterDashboard extends Component
         return $totalRequests > 0 ? round(($respondedRequests / $totalRequests) * 100, 1) : 0;
     }
 
-    private function calculateOnTimeRate()
-    {
-        // This would need actual attendance data - for now, return a placeholder
-        return 95.5;
-    }
+
 
 
 
