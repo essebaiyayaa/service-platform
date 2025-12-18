@@ -72,6 +72,11 @@ class IntervenantDetails extends Component
             return redirect()->route('admin.intervenants');
         }
 
+        // Si l'intervenant est encore en attente, forcer l'affichage en attente même si l'offre est déjà ACTIVE
+        if ($this->intervenant->statut === 'EN_ATTENTE' && $this->offre) {
+            $this->offre->statut = 'EN_ATTENTE';
+        }
+
         // Si aucune offre n'existe, créer un stub minimal pour l'affichage
         if (!$this->offre && $this->serviceId) {
             $this->offre = (object) [
@@ -165,11 +170,68 @@ class IntervenantDetails extends Component
                 $this->serviceType = "Garde d'animaux";
                 $this->petkeeperData = $petkeeper;
                 
-                $this->petkeeperData->certifications = DB::table('petkeeper_certifications')
+                $certifications = DB::table('petkeeper_certifications')
                     ->where('idPetKeeper', $petkeeper->idPetKeeper)
                     ->get();
+
+                $this->petkeeperData->certifications = $certifications;
+
+                // Documents obligatoires (casier judiciaire, justificatif de domicile) + reste des certificats
+                $this->petkeeperData->documents = collect([
+                    [
+                        'label' => 'Extrait de casier judiciaire',
+                        'path' => optional($certifications->firstWhere('certification', 'EXTRACT_DE_CASIER_JUDICIAIRE'))->document,
+                    ],
+                    [
+                        'label' => 'Justificatif de domicile',
+                        'path' => optional($certifications->firstWhere('certification', 'JUSTIFICATIF_DE_DOMICILE'))->document,
+                    ],
+                ])->filter(fn ($doc) => !empty($doc['path']));
+
+                $this->petkeeperData->otherCertifications = $certifications->filter(
+                    fn ($cert) => !in_array($cert->certification, [
+                        'EXTRACT_DE_CASIER_JUDICIAIRE',
+                        'JUSTIFICATIF_DE_DOMICILE',
+                    ])
+                );
             }
             return;
+        }
+
+        // Fallback: si le nom de service est personnalisé (ex: "Gardiennage de chiens"), détecter PetKeeper par table
+        if (!$this->serviceType) {
+            $petkeeper = DB::table('petkeepers')
+                ->where('idPetKeeper', $idIntervenant)
+                ->first();
+
+            if ($petkeeper) {
+                $this->serviceType = "Garde d'animaux";
+                $this->petkeeperData = $petkeeper;
+
+                $certifications = DB::table('petkeeper_certifications')
+                    ->where('idPetKeeper', $petkeeper->idPetKeeper)
+                    ->get();
+
+                $this->petkeeperData->certifications = $certifications;
+
+                $this->petkeeperData->documents = collect([
+                    [
+                        'label' => 'Extrait de casier judiciaire',
+                        'path' => optional($certifications->firstWhere('certification', 'EXTRACT_DE_CASIER_JUDICIAIRE'))->document,
+                    ],
+                    [
+                        'label' => 'Justificatif de domicile',
+                        'path' => optional($certifications->firstWhere('certification', 'JUSTIFICATIF_DE_DOMICILE'))->document,
+                    ],
+                ])->filter(fn ($doc) => !empty($doc['path']));
+
+                $this->petkeeperData->otherCertifications = $certifications->filter(
+                    fn ($cert) => !in_array($cert->certification, [
+                        'EXTRACT_DE_CASIER_JUDICIAIRE',
+                        'JUSTIFICATIF_DE_DOMICILE',
+                    ])
+                );
+            }
         }
     }
 
