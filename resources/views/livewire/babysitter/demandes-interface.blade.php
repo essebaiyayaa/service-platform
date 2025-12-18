@@ -141,7 +141,7 @@
                         <label class="block text-sm mb-2" style="color: #0a0a0a; font-weight: 600;">Besoins spécifiques</label>
                         <div class="flex flex-wrap gap-2">
                             @foreach($availableSpecificNeeds as $need)
-                                <button wire:click="toggleSpecificNeed('{{ $need->experience }}')"
+                                <button wire:click="toggleSpecificNeed('{{ addslashes($need->experience) }}')"
                                     class="px-3 py-1 rounded-lg text-sm transition-all {{ in_array($need->experience, $selectedSpecificNeeds) ? 'bg-[#F9E0ED] text-[#B82E6E] border border-[#B82E6E]' : 'bg-gray-50 text-gray-600 border border-transparent hover:bg-gray-100' }}">
                                     {{ $need->experience }}
                                 </button>
