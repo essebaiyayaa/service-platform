@@ -47,10 +47,10 @@
                             $shadow = 'shadow-pink-200';
                             $btnText = 'text-pink-600';
                         } else {
-                            $route = '#';
+                            $route = route('petkeeper.dashboard');
                             $icon = '🐾';
-                            $title = $service->nomService;
-                            $desc = 'Gestion de votre activité';
+                            $title = 'PetKeeping';
+                            $desc = 'Gestion de votre service de garde d\'animaux';
                             $gradient = 'from-emerald-500 to-green-500';
                             $shadow = 'shadow-green-200';
                             $btnText = 'text-green-600';
