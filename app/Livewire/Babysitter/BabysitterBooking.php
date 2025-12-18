@@ -8,6 +8,7 @@ use App\Models\Babysitting\Disponibilite;
 use App\Models\Babysitting\DemandeIntervention;
 use App\Models\Babysitting\Enfant;
 use App\Models\Babysitting\Superpouvoir;
+use App\Jobs\SendBabysitterBookingNotification;
 use Illuminate\Support\Facades\DB;
 
 class BabysitterBooking extends Component
@@ -487,6 +488,10 @@ class BabysitterBooking extends Component
             }
             
             DB::commit();
+            
+            // Envoyer la notification au babysitter
+            SendBabysitterBookingNotification::dispatch($demande);
+            
             $this->showSuccess = true;
             
             session()->flash('success', 'Votre demande de réservation a été envoyée avec succès ! Prix total: ' . $this->totalPrice . ' MAD');
@@ -523,7 +528,37 @@ class BabysitterBooking extends Component
             }
         }
         
-        $this->totalPrice = $totalHours * $hourlyRate * $numberOfChildren;
+        // Ajouter le coût des services additionnels
+        $servicesCost = 0;
+        if (!empty($this->selectedServices)) {
+            // Coût fixe par service (à adapter selon vos tarifs)
+            $serviceRates = [
+                'garde_nuit' => 20,
+                'repas_sain' => 15,
+                'aide_devoirs' => 10,
+                'sorties' => 25,
+                'toilette' => 5
+            ];
+            
+            foreach ($this->selectedServices as $service) {
+                if (isset($serviceRates[$service])) {
+                    $servicesCost += $serviceRates[$service];
+                }
+            }
+        }
+        
+        // Calculer le prix total
+        $basePrice = $totalHours * $hourlyRate * $numberOfChildren;
+        $this->totalPrice = $basePrice + $servicesCost;
+        
+        \Log::info('Prix calculé', [
+            'totalHours' => $totalHours,
+            'hourlyRate' => $hourlyRate,
+            'numberOfChildren' => $numberOfChildren,
+            'servicesCost' => $servicesCost,
+            'basePrice' => $basePrice,
+            'totalPrice' => $this->totalPrice
+        ]);
     }
     
     public function updatedStartTime()

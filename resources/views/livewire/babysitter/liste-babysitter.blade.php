@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-gray-50 font-sans">
+<div class="min-h-screen bg-gray-50 font-sans" wire:poll.10s>
     <livewire:shared.header-babysitting />
     <!-- Header Section with Gradient -->
     <div class="relative bg-white overflow-hidden">
@@ -21,8 +21,7 @@
                     </h1>
                     <p class="text-lg text-gray-600 max-w-2xl leading-relaxed">
                         Des professionnels de confiance pour prendre soin de vos enfants. 
-                        <span class="font-semibold text-[#B82E6E]">{{ $totalBabysitters }} profils vérifiés</span> disponibles maintenant.
-                    </p>
+                        
                 </div>
                 
                 <!-- Search Bar and Toggle -->
@@ -553,6 +552,20 @@
                     }
                 } else {
                     destroyMap();
+                }
+            });
+
+            // Mettre à jour la carte lors des changements de filtres
+            Livewire.on('map-updated', () => {
+                const mapElement = document.getElementById('babysitters-map');
+                if (mapElement && mapInstance) {
+                    const babysittersData = @json($babysittersMap);
+                    console.log('Map updated - nouvelles données:', babysittersData);
+                    if (babysittersData && babysittersData.length > 0) {
+                        // Détruire et recréer la carte avec les nouvelles données
+                        destroyMap();
+                        initializeMap(babysittersData);
+                    }
                 }
             });
         });
