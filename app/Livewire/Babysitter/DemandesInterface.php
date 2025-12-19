@@ -193,6 +193,7 @@ class DemandesInterface extends Component
                 'label' => 'Historique',
                 'value' => DemandeIntervention::where('idIntervenant', $userId)
                     ->where('idService', 2)
+                    ->where('statut', '!=', 'en_attente')
                     ->count(),
                 'color' => '#EF4444',
                 'bgColor' => '#FEE2E2'
@@ -213,7 +214,8 @@ class DemandesInterface extends Component
         } elseif ($this->selectedTab === 'validee') {
             $query->where('statut', 'validée');
         } elseif ($this->selectedTab === 'archive') {
-            // Historique : Affiche TOUTES les demandes (aucune restriction de statut)
+            // Historique : Affiche TOUTES les demandes SAUF en_attente
+            $query->where('statut', '!=', 'en_attente');
             
             // Appliquer le filtre supplémentaire si spécifié (optionnel, si vous voulez garder le sous-filtre)
             if ($this->archiveFilter === 'confirmed') {
@@ -346,8 +348,7 @@ class DemandesInterface extends Component
                 if($demande->heureDebut && $demande->heureFin) {
                     $duration = $demande->heureDebut->diffInHours($demande->heureFin);
                 }
-                $childrenCount = $demande->enfants->count();
-                $totalPrice = $duration * $hourlyRate * ($childrenCount > 0 ? $childrenCount : 1);
+                $totalPrice = $duration * $hourlyRate;
 
                 if ($this->minPriceFilter && $totalPrice < $this->minPriceFilter) return false;
                 if ($this->maxPriceFilter && $totalPrice > $this->maxPriceFilter) return false;
