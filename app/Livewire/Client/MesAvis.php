@@ -8,6 +8,7 @@ use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class MesAvis extends Component
 {
@@ -37,12 +38,32 @@ class MesAvis extends Component
     protected $rules = [
         'sujet' => 'required|min:5|max:255',
         'description' => 'required|min:10',
-        'priorite' => 'required|in:faible,moyenne,haute',
+        'priorite' => 'required|in:faible,moyenne,urgente',
         'preuves.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240'
+    ];
+
+    protected $messages = [
+        'sujet.required' => 'Le sujet est obligatoire',
+        'sujet.min' => 'Le sujet doit contenir au moins 5 caractères',
+        'sujet.max' => 'Le sujet ne peut pas dépasser 255 caractères',
+        'description.required' => 'La description est obligatoire',
+        'description.min' => 'La description doit contenir au moins 10 caractères',
+        'priorite.required' => 'Veuillez sélectionner une priorité',
+        'priorite.in' => 'La priorité doit être faible, moyenne ou urgente',
+        'preuves.*.mimes' => 'Les fichiers doivent être des images (jpg, jpeg, png) ou des PDF',
+        'preuves.*.max' => 'Chaque fichier ne doit pas dépasser 10 MB'
     ];
 
     public function mount()
     {
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'Veuillez vous connecter pour accéder à cette page.');
+        }
+
+        if (Auth::user()->role !== 'client') {
+            return redirect('/')->with('error', 'Cette page est réservée aux clients uniquement.');
+        }
+
         $this->loadUser();
     }
 
@@ -63,13 +84,26 @@ class MesAvis extends Component
     }
 
     // Reset pagination quand on filtre
-    public function updatedSearchTerm() { $this->resetPage(); }
-    public function updatedFilterService() { $this->resetPage(); }
-    public function updatedFilterNote() { $this->resetPage(); }
+    public function updatedSearchTerm() 
+    { 
+        $this->resetPage(); 
+    }
+    
+    public function updatedFilterService() 
+    { 
+        $this->resetPage(); 
+    }
+    
+    public function updatedFilterNote() 
+    { 
+        $this->resetPage(); 
+    }
 
     // Modal Avis
     public function openAvisModal($id)
     {
+        Log::info("Opening avis modal for ID: {$id}");
+        
         $this->selectedAvis = DB::table('feedbacks')
             ->join('utilisateurs', 'feedbacks.idAuteur', '=', 'utilisateurs.idUser')
             ->leftJoin('demandes_intervention', 'feedbacks.idDemande', '=', 'demandes_intervention.idDemande')
@@ -89,9 +123,12 @@ class MesAvis extends Component
                 ->where('idFeedback', $id)
                 ->where('idAuteur', $this->user->idUser)
                 ->exists();
+            
+            $this->showAvisModal = true;
+            Log::info("Avis modal opened successfully");
+        } else {
+            Log::error("Avis not found for ID: {$id}");
         }
-
-        $this->showAvisModal = true;
     }
 
     public function closeAvisModal()
@@ -103,7 +140,12 @@ class MesAvis extends Component
     // Modal Réclamation
     public function openReclamationModal($feedbackId)
     {
+        Log::info("Opening reclamation modal for feedback ID: {$feedbackId}");
+        
         $this->selectedFeedbackId = $feedbackId;
+        $this->reset(['sujet', 'description', 'preuves']);
+        $this->priorite = 'moyenne';
+        $this->resetValidation();
         $this->showReclamationModal = true;
     }
 
@@ -112,6 +154,9 @@ class MesAvis extends Component
         if ($this->selectedAvis) {
             $this->selectedFeedbackId = $this->selectedAvis->idFeedBack;
             $this->showAvisModal = false;
+            $this->reset(['sujet', 'description', 'preuves']);
+            $this->priorite = 'moyenne';
+            $this->resetValidation();
             $this->showReclamationModal = true;
         }
     }
@@ -121,14 +166,37 @@ class MesAvis extends Component
         $this->showReclamationModal = false;
         $this->selectedFeedbackId = null;
         $this->reset(['sujet', 'description', 'priorite', 'preuves']);
+        $this->resetValidation();
     }
 
     // Créer réclamation
     public function createReclamation()
     {
+        Log::info('=== DEBUT CREATION RECLAMATION ===');
+        Log::info('Feedback ID: ' . $this->selectedFeedbackId);
+        Log::info('Sujet: ' . $this->sujet);
+        Log::info('Description: ' . $this->description);
+        Log::info('Priorité: ' . $this->priorite);
+        
+        // Validation
         $this->validate();
+        
+        Log::info('Validation passed');
 
         try {
+            // Récupérer le feedback
+            $feedback = DB::table('feedbacks')
+                ->where('idFeedBack', $this->selectedFeedbackId)
+                ->first();
+
+            if (!$feedback) {
+                Log::error('Feedback not found: ' . $this->selectedFeedbackId);
+                session()->flash('error', 'Avis introuvable.');
+                return;
+            }
+
+            Log::info('Feedback found - idAuteur: ' . $feedback->idAuteur);
+
             // Vérifier si réclamation existe déjà
             $existingReclamation = DB::table('reclamantions')
                 ->where('idFeedback', $this->selectedFeedbackId)
@@ -136,25 +204,28 @@ class MesAvis extends Component
                 ->exists();
 
             if ($existingReclamation) {
+                Log::warning('Reclamation already exists');
                 session()->flash('error', 'Une réclamation existe déjà pour cet avis.');
+                $this->closeReclamationModal();
                 return;
             }
 
             // Gérer l'upload des preuves
             $preuvesPath = null;
             if (!empty($this->preuves)) {
+                Log::info('Processing ' . count($this->preuves) . ' files');
                 $paths = [];
                 foreach ($this->preuves as $file) {
-                    $paths[] = $file->store('reclamations/preuves', 'public');
+                    $path = $file->store('reclamations/preuves', 'public');
+                    $paths[] = $path;
+                    Log::info('File stored: ' . $path);
                 }
                 $preuvesPath = json_encode($paths);
             }
 
-            // Créer la réclamation
-            DB::table('reclamantions')->insert([
-                'idCible' => DB::table('feedbacks')
-                    ->where('idFeedBack', $this->selectedFeedbackId)
-                    ->value('idAuteur'),
+            // Préparer les données
+            $data = [
+                'idCible' => $feedback->idAuteur,
                 'idAuteur' => $this->user->idUser,
                 'idFeedback' => $this->selectedFeedbackId,
                 'statut' => 'en_attente',
@@ -162,31 +233,52 @@ class MesAvis extends Component
                 'sujet' => $this->sujet,
                 'description' => $this->description,
                 'priorite' => $this->priorite,
-                'dateCreation' => now(),
-                'dateMiseAJour' => now()
-            ]);
+                'dateCreation' => now()
+            ];
 
-            session()->flash('success', 'Réclamation envoyée avec succès !');
-            $this->closeReclamationModal();
+            Log::info('Data to insert: ' . json_encode($data));
+
+            // Créer la réclamation
+            $inserted = DB::table('reclamantions')->insert($data);
+
+            if ($inserted) {
+                Log::info('Reclamation created successfully');
+                session()->flash('success', 'Réclamation envoyée avec succès !');
+                $this->closeReclamationModal();
+                
+                // Rafraîchir la page
+                $this->dispatch('reclamation-created');
+            } else {
+                Log::error('Failed to insert reclamation');
+                session()->flash('error', 'Échec de la création de la réclamation.');
+            }
 
         } catch (\Exception $e) {
-            \Log::error('Erreur création réclamation: ' . $e->getMessage());
+            Log::error('=== ERREUR CREATION RECLAMATION ===');
+            Log::error('Message: ' . $e->getMessage());
+            Log::error('File: ' . $e->getFile());
+            Log::error('Line: ' . $e->getLine());
+            Log::error('Trace: ' . $e->getTraceAsString());
+            
             session()->flash('error', 'Une erreur est survenue : ' . $e->getMessage());
         }
+        
+        Log::info('=== FIN CREATION RECLAMATION ===');
     }
 
     public function removePreuve($index)
     {
-        unset($this->preuves[$index]);
-        $this->preuves = array_values($this->preuves);
+        if (isset($this->preuves[$index])) {
+            unset($this->preuves[$index]);
+            $this->preuves = array_values($this->preuves);
+            Log::info("Removed preuve at index: {$index}");
+        }
     }
 
     // Calcul des statistiques
     private function getStats()
     {
-        $query = $this->getBaseQuery();
-
-        $allAvis = $query->get();
+        $allAvis = $this->getBaseQuery()->get();
 
         return [
             'total_avis' => $allAvis->count(),
