@@ -1,7 +1,7 @@
 <div class="min-h-screen bg-white">
     <livewire:shared.header />
     
-    <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 md:p-6">
+    <div class="min-h-screen bg-gradient-to-br from-amber-100 to-amber-200 p-4 md:p-6">
         <!-- Centered Title Section -->
         <div class="flex flex-col items-center justify-center text-center w-full mb-8">
             <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Trouvez des Services de Garde d'Animaux</h1>
