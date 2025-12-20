@@ -97,7 +97,7 @@ class PetKeeperDashboard extends Component
     {
         $this->reset([
             'showReclamationModal',
-            'reclamationAvisId',
+            'reclamationFeedbackId',
             'reclamationCibleId',
             'sujet',
             'description',
@@ -125,7 +125,7 @@ class PetKeeperDashboard extends Component
         Reclamation::create([
             'idAuteur'    => $this->user->idUser,
             'idCible'     => $this->reclamationCibleId,
-            'idFeedback'  => $this->reclamationAvisId,
+            'idFeedback'  => $this->reclamationFeedbackId,
             'sujet'       => $this->sujet,
             'description' => $this->description,
             'priorite'    => $this->priorite,

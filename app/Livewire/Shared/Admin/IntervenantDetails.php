@@ -33,21 +33,36 @@ class IntervenantDetails extends Component
 
         $this->intervenantId = $idintervenant;
         $this->serviceId = $idservice;
+
+        // Résoudre un idService manquant selon la catégorie détectée
+        if (empty($this->serviceId)) {
+            $resolved = null;
+
+            if (DB::table('babysitters')->where('idBabysitter', $this->intervenantId)->exists()) {
+                $resolved = DB::table('services')->where('nomService', 'Babysitting')->value('idService');
+            }
+
+            if (!$resolved && DB::table('petkeepers')->where('idPetKeeper', $this->intervenantId)->exists()) {
+                $resolved = DB::table('services')->where('nomService', 'Pet Keeping')->value('idService');
+            }
+
+            if (!$resolved && DB::table('professeurs')->where('intervenant_id', $this->intervenantId)->exists()) {
+                $resolved = DB::table('services')->where('nomService', 'Soutien Scolaire')->value('idService');
+            }
+
+            $this->serviceId = $resolved;
+        }
+
         $this->loadIntervenantData();
     }
 
     private function loadIntervenantData()
     {
-        // Get the specific offer from offres_services
+        // Get the specific offer from offres_services (peut être absente pour certains flux)
         $this->offre = DB::table('offres_services')
             ->where('idintervenant', $this->intervenantId)
-            ->where('idService', $this->serviceId)
+            ->when($this->serviceId, fn($q) => $q->where('idService', $this->serviceId))
             ->first();
-        
-        if (!$this->offre) {
-            session()->flash('error', 'Offre non trouvée');
-            return redirect()->route('admin.intervenants');
-        }
 
         // Get intervenant data
         $this->intervenant = Intervenant::where('IdIntervenant', $this->intervenantId)->first();
@@ -55,6 +70,21 @@ class IntervenantDetails extends Component
         if (!$this->intervenant) {
             session()->flash('error', 'Intervenant non trouvé');
             return redirect()->route('admin.intervenants');
+        }
+
+        // Si l'intervenant est encore en attente, forcer l'affichage en attente même si l'offre est déjà ACTIVE
+        if ($this->intervenant->statut === 'EN_ATTENTE' && $this->offre) {
+            $this->offre->statut = 'EN_ATTENTE';
+        }
+
+        // Si aucune offre n'existe, créer un stub minimal pour l'affichage
+        if (!$this->offre && $this->serviceId) {
+            $this->offre = (object) [
+                'idintervenant' => $this->intervenantId,
+                'idService' => $this->serviceId,
+                'statut' => $this->intervenant->statut ?? 'EN_ATTENTE',
+                'created_at' => $this->intervenant->created_at,
+            ];
         }
 
         // Get user data
@@ -119,6 +149,14 @@ class IntervenantDetails extends Component
                     ->where('choisir_categories.idBabysitter', $idIntervenant)
                     ->pluck('categorie_enfants.categorie')
                     ->toArray();
+
+                // Documents uploadés lors de l'inscription babysitter
+                $this->babysitterData->documents = collect([
+                    ['label' => 'Casier judiciaire', 'path' => $babysitter->procedeJuridique ?? null],
+                    ['label' => 'Radiographie thorax', 'path' => $babysitter->radiographieThorax ?? null],
+                    ['label' => 'Coproculture des selles', 'path' => $babysitter->coprocultureSelles ?? null],
+                    ['label' => "Certificat d'aptitude mentale", 'path' => $babysitter->certifAptitudeMentale ?? null],
+                ])->filter(fn($doc) => !empty($doc['path']));
             }
             return;
         }
@@ -132,11 +170,68 @@ class IntervenantDetails extends Component
                 $this->serviceType = "Garde d'animaux";
                 $this->petkeeperData = $petkeeper;
                 
-                $this->petkeeperData->certifications = DB::table('petkeeper_certifications')
+                $certifications = DB::table('petkeeper_certifications')
                     ->where('idPetKeeper', $petkeeper->idPetKeeper)
                     ->get();
+
+                $this->petkeeperData->certifications = $certifications;
+
+                // Documents obligatoires (casier judiciaire, justificatif de domicile) + reste des certificats
+                $this->petkeeperData->documents = collect([
+                    [
+                        'label' => 'Extrait de casier judiciaire',
+                        'path' => optional($certifications->firstWhere('certification', 'EXTRACT_DE_CASIER_JUDICIAIRE'))->document,
+                    ],
+                    [
+                        'label' => 'Justificatif de domicile',
+                        'path' => optional($certifications->firstWhere('certification', 'JUSTIFICATIF_DE_DOMICILE'))->document,
+                    ],
+                ])->filter(fn ($doc) => !empty($doc['path']));
+
+                $this->petkeeperData->otherCertifications = $certifications->filter(
+                    fn ($cert) => !in_array($cert->certification, [
+                        'EXTRACT_DE_CASIER_JUDICIAIRE',
+                        'JUSTIFICATIF_DE_DOMICILE',
+                    ])
+                );
             }
             return;
+        }
+
+        // Fallback: si le nom de service est personnalisé (ex: "Gardiennage de chiens"), détecter PetKeeper par table
+        if (!$this->serviceType) {
+            $petkeeper = DB::table('petkeepers')
+                ->where('idPetKeeper', $idIntervenant)
+                ->first();
+
+            if ($petkeeper) {
+                $this->serviceType = "Garde d'animaux";
+                $this->petkeeperData = $petkeeper;
+
+                $certifications = DB::table('petkeeper_certifications')
+                    ->where('idPetKeeper', $petkeeper->idPetKeeper)
+                    ->get();
+
+                $this->petkeeperData->certifications = $certifications;
+
+                $this->petkeeperData->documents = collect([
+                    [
+                        'label' => 'Extrait de casier judiciaire',
+                        'path' => optional($certifications->firstWhere('certification', 'EXTRACT_DE_CASIER_JUDICIAIRE'))->document,
+                    ],
+                    [
+                        'label' => 'Justificatif de domicile',
+                        'path' => optional($certifications->firstWhere('certification', 'JUSTIFICATIF_DE_DOMICILE'))->document,
+                    ],
+                ])->filter(fn ($doc) => !empty($doc['path']));
+
+                $this->petkeeperData->otherCertifications = $certifications->filter(
+                    fn ($cert) => !in_array($cert->certification, [
+                        'EXTRACT_DE_CASIER_JUDICIAIRE',
+                        'JUSTIFICATIF_DE_DOMICILE',
+                    ])
+                );
+            }
         }
     }
 
@@ -194,8 +289,7 @@ class IntervenantDetails extends Component
             ->where('idintervenant', $this->intervenantId)
             ->where('idService', $this->serviceId)
             ->update([
-                'statut' => 'ARCHIVED',
-                'updated_at' => now()
+                'statut' => 'ARCHIVED'
             ]);
 
         // Check if intervenant has any other active offers
