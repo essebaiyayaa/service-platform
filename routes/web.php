@@ -117,7 +117,7 @@ Route::prefix('pet-keeping')->group(function () {
 // ============================================================================
 
 Route::post('/register-client', [RegisterController::class, 'store'])->name('register.store');
-Route::post('/connexion', [LoginController::class, 'store'])->name('login.store');
+Route::post('/connexion', [\App\Http\Controllers\Api\Auth\LoginController::class, 'store'])->name('login.store');
 Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
 // ============================================================================
@@ -174,16 +174,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('dashboard/mon-avis/{idService}/{demandeId}/{auteurId}/{cibleId}/{typeAuteur?}', PetKeeperAvis::class)->name('avis');
     });
     
-    // Admin Routes
-    Route::prefix('admin')->name('admin.')->group(function () {
-        Route::get('dashboard', AdminDashboard::class)->name('dashboard');
-        Route::get('users', AdminUsers::class)->name('users');
-        Route::get('reclamations', ReclamationsList::class)->name('reclamations');
-        Route::get('reclamations/{id}/details', ReclamationDetails::class)->name('reclamations.details');
-        Route::get('reclamations/{id}/traiter', TraiterReclamation::class)->name('reclamations.traiter');
-        Route::get('intervenants', AdminIntervenants::class)->name('intervenants');
-        Route::get('intervenant/{idintervenant}/{idservice}', IntervenantDetails::class)->name('intervenant.details');
-    });
+
     
     // Feedback Routes
     Route::get('/feedback/test', FeedbackComponent::class)->name('feedback.test');
@@ -191,4 +182,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/feedback/babysitter/{idService}/{demandeId}/{auteurId}/{cibleId}/{typeAuteur?}', FeedbackComponent::class)->name('feedback.babysitter');
     Route::get('/feedback/tutoring/{idService}/{demandeId}/{auteurId}/{cibleId}/{typeAuteur?}', FeedbackComponent::class)->name('feedback.tutoring');
     Route::get('/feedback/pet-keeping/{idService}/{demandeId}/{auteurId}/{cibleId}/{typeAuteur?}', FeedbackComponent::class)->name('feedback.pet-keeping');
+});
+
+// ============================================================================
+// ADMIN ROUTES (PROTECTED BY CUSTOM MIDDLEWARE)
+// ============================================================================
+
+Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
+    Route::get('dashboard', AdminDashboard::class)->name('dashboard');
+    Route::get('users', AdminUsers::class)->name('users');
+    Route::get('reclamations', ReclamationsList::class)->name('reclamations');
+    Route::get('reclamations/{id}/details', ReclamationDetails::class)->name('reclamations.details');
+    Route::get('reclamations/{id}/traiter', TraiterReclamation::class)->name('reclamations.traiter');
+    Route::get('intervenants', AdminIntervenants::class)->name('intervenants');
+    Route::get('intervenant/{idintervenant}/{idservice}', IntervenantDetails::class)->name('intervenant.details');
 });
