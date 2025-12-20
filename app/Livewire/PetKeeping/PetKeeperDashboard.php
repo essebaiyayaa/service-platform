@@ -32,6 +32,7 @@ class PetKeeperDashboard extends Component
 
     public $reclamationFeedbackId = null; // idFeedback
     public $reclamationCibleId = null;
+    public $feedbacksOnClient = [];
 
     public $sujet;
     public $description;
@@ -391,6 +392,18 @@ class PetKeeperDashboard extends Component
             ->where('idIntervenant', Auth::id())
             ->whereIn('demandes_intervention.statut', ['validée', 'terminée'])
             ->sum('factures.montantTotal');
+    }
+
+
+    public function getFeedbacksOnClient($idClient){
+        $this->feedbacksOnClient = DB::table('feedbacks')
+            ->join('utilisateurs', 'feedbacks.idAuteur', '=', 'utilisateurs.idUser')
+            ->where('feedbacks.idCible', $idClient)
+            ->where('feedbacks.estVisible', 1)
+            ->orderBy('feedbacks.dateCreation', 'desc')
+            ->select('feedbacks.commentaire')
+            ->limit(5)
+            ->get();
     }
 
    
