@@ -54,6 +54,8 @@ class PetKeeperRegistration extends Component
     public $code_postal;
     public $pays = '';
     public $profile_photo;
+    public $longitude = 0;
+    public $latitude = 0;
     
     // Étape 5: Professionnel (Note: Step 4 is Services)
     public $specialite;
@@ -297,6 +299,25 @@ class PetKeeperRegistration extends Component
             }
         }
     }
+
+
+    public function setLocation($latitude, $longitude, $city, $fullAddress = null)
+    {
+        $this->latitude = $latitude;
+        $this->longitude = $longitude;
+        $this->ville = $city;
+        
+        if ($fullAddress) {
+            $this->adresse = $fullAddress;
+        }
+        
+        Log::info('Localisation définie', [
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            'ville' => $city,
+            'adresse_complete' => $fullAddress
+        ]);
+    }
     
     public function submit()
     {
@@ -333,8 +354,8 @@ class PetKeeperRegistration extends Component
                 'idUser'   => $utilisateur->idUser,
                 'ville'    => $this->ville,
                 'adresse'  => $this->adresse,
-                'latitude' => 0,
-                'longitude'=> 0,
+                'latitude' => $this->latitude,
+                'longitude'=> $this->longitude,
             ]);
 
             $petKeeper = PetKeeper::create([
