@@ -460,7 +460,11 @@ class PetKeeperRegistration extends Component
             
             // Show success message
             //$this->showSuccessMessage($utilisateur, $petKeeper);
-            
+            session()->flash(
+                'success',
+                "Le compte petkeeper a été créé avec succès. Un email de confirmation a été envoyé à {$this->email}."
+            );
+
             return redirect()->route('login.store');
 
         } catch (\Exception $e) {
