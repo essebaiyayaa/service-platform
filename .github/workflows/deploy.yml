@@ -1,11 +1,14 @@
 name: Deploy Laravel to Hostinger (Shared)
+
 on:
   push:
     branches:
       - main
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -14,15 +17,37 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          tools: composer
+          extensions: mbstring, xml, ctype, json, bcmath, pdo, mysql
+          tools: composer:v2
+      
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+      
+      - name: Cache composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
       
       - name: Install Composer dependencies
-        run: composer install --no-dev --optimize-autoloader
-      
-      - name: Prepare files for shared hosting
         run: |
-          cp -r public/* .
-          rm -rf public
+          composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+          composer dump-autoload --optimize --classmap-authoritative
+      
+      - name: Verify installation
+        run: |
+          php artisan --version
+          php artisan route:list --except-vendor || true
+      
+      - name: Create deployment package
+        run: |
+          mkdir -p deployment
+          # Copy application files
+          rsync -av --exclude='.git' --exclude='.github' --exclude='node_modules' \
+                --exclude='tests' --exclude='.env' --exclude='.env.example' \
+                ./ deployment/
       
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -31,10 +56,16 @@ jobs:
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASS }}
           port: ${{ secrets.FTP_PORT }}
-          local-dir: ./
+          local-dir: ./deployment/
           server-dir: /public_html/
+          dangerous-clean-slate: false
           exclude: |
             **/.git*
             **/.git*/**
-            **/.env
+            **/.github/**
             **/node_modules/**
+            **/tests/**
+            **/.env
+            **/.env.example
+            **/phpunit.xml
+            **/README.md
