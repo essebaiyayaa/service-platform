@@ -188,12 +188,13 @@ Route::middleware(['auth'])->group(function () {
 // ADMIN ROUTES (PROTECTED BY CUSTOM MIDDLEWARE)
 // ============================================================================
 
-Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
-    Route::get('dashboard', AdminDashboard::class)->name('dashboard');
-    Route::get('users', AdminUsers::class)->name('users');
-    Route::get('reclamations', ReclamationsList::class)->name('reclamations');
-    Route::get('reclamations/{id}/details', ReclamationDetails::class)->name('reclamations.details');
-    Route::get('reclamations/{id}/traiter', TraiterReclamation::class)->name('reclamations.traiter');
-    Route::get('intervenants', AdminIntervenants::class)->name('intervenants');
-    Route::get('intervenant/{idintervenant}/{idservice}', IntervenantDetails::class)->name('intervenant.details');
+// Admin Routes
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', AdminDashboard::class)->name('dashboard');
+    Route::get('/users', AdminUsers::class)->name('users');
+    Route::get('/reclamations', ReclamationsList::class)->name('reclamations');
+    Route::get('/reclamations/{id}/details', ReclamationDetails::class)->name('reclamations.details');
+    Route::get('/reclamations/{id}/traiter', TraiterReclamation::class)->name('reclamations.traiter');
+    Route::get('/intervenants', AdminIntervenants::class)->name('intervenants');
+    Route::get('/intervenant/{idintervenant}/{idservice}', IntervenantDetails::class)->name('intervenant.details');
 });

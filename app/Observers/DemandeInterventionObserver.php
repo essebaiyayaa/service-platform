@@ -123,35 +123,29 @@ class DemandeInterventionObserver
         $auteurId = $userType === 'client' ? $demande->idClient : $demande->idIntervenant;
         $cibleId = $userType === 'client' ? $demande->idIntervenant : $demande->idClient;
         
-        // Route selon le type de service
-        switch ($demande->idService) {
-            case 1: // Babysitting
-                return route('feedback.babysitter', [
-                    'idService' => $demande->idService,
-                    'demandeId' => $demande->idDemande,
-                    'auteurId' => $auteurId,
-                    'cibleId' => $cibleId,
-                    'typeAuteur' => $userType
-                ]);
-            case 2: // Soutien scolaire
-                return route('feedback.tutoring', [
-                    'idService' => $demande->idService,
-                    'demandeId' => $demande->idDemande,
-                    'auteurId' => $auteurId,
-                    'cibleId' => $cibleId,
-                    'typeAuteur' => $userType
-                ]);
-            case 3: // Pet keeping
-                return route('feedback.petkeeping', [
-                    'idService' => $demande->idService,
-                    'demandeId' => $demande->idDemande,
-                    'auteurId' => $auteurId,
-                    'cibleId' => $cibleId,
-                    'typeAuteur' => $userType
-                ]);
-            default:
-                return route('dashboard');
+        // Déterminer la route selon le nom du service (plus fiable que l'ID)
+        $service = $demande->service;
+        $routeName = 'feedback.form'; // Fallback
+        
+        if ($service) {
+            $nomService = strtolower($service->nomService);
+            
+            if (str_contains($nomService, 'babysitting')) {
+                $routeName = 'feedback.babysitter';
+            } elseif (str_contains($nomService, 'soutien') || str_contains($nomService, 'scolaire')) {
+                $routeName = 'feedback.tutoring';
+            } elseif (str_contains($nomService, 'pet') || str_contains($nomService, 'animaux')) {
+                $routeName = 'feedback.pet-keeping';
+            }
         }
+        
+        return route($routeName, [
+            'idService' => $demande->idService,
+            'demandeId' => $demande->idDemande,
+            'auteurId' => $auteurId,
+            'cibleId' => $cibleId,
+            'typeAuteur' => $userType
+        ]);
     }
 
     /**

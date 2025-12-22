@@ -12,7 +12,7 @@ Artisan::command('inspire', function () {
 \Illuminate\Support\Facades\Schedule::command('babysitter:cancel-expired-bookings')->hourly();
 
 // Rappels de feedback quotidiens (Client & Babysitter)
-\Illuminate\Support\Facades\Schedule::command('feedback:send-reminders')->dailyAt('13:59');
+\Illuminate\Support\Facades\Schedule::command('feedback:send-reminders')->dailyAt('11:19');
 
 // Commande de test pour préparer les données (TEMPORAIRE)
 \Illuminate\Support\Facades\Artisan::command('test:prepare-feedback-data', function () {
