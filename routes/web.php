@@ -52,26 +52,18 @@ use App\Livewire\Babysitter\BabysitterDashboard;
 use App\Livewire\Babysitter\BabysitterProfile;
 use App\Livewire\Babysitter\BabysitterProfilePage;
 use App\Livewire\Babysitter\BabysitterRegistration;
-use App\Livewire\Babysitter\BabysitterRegistrationSuccess;
 use App\Livewire\Babysitter\DemandesInterface;
-use App\Livewire\Babysitter\DisponibilitesPage as BabysitterDisponibilitesPage;
 use App\Livewire\Babysitter\FeedbackBabysitter;
 use App\Livewire\Babysitter\ListeBabysitter;
 
 // Pet Keeping Components
 use App\Livewire\PetKeeper\PetKeeperAvis;
 use App\Livewire\PetKeeping\AddPetKeepingService;
-use App\Livewire\PetKeeping\DisponibilitesPetKeeper;
-use App\Livewire\PetKeeping\MesClients as PetKeeperClients;
-use App\Livewire\PetKeeping\MyServices as MyPetKeepingServices;
 use App\Livewire\PetKeeping\PetKeeperDashboard;
-use App\Livewire\PetKeeping\PetKeeperMissionDetails;
 use App\Livewire\PetKeeping\PetKeeperMissions;
 use App\Livewire\PetKeeping\PetKeeperProfile;
 use App\Livewire\PetKeeping\PetKeeperRegistration;
 use App\Livewire\PetKeeping\PetkeepingServiceBooking;
-use App\Livewire\PetKeeping\SearchService as PetKeepingService;
-use App\Livewire\PetKeeping\SingleService as SinglePetKeepingService;
 
 use Illuminate\Support\Facades\Route;
 
@@ -81,10 +73,21 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-// ============================================================================
-// PUBLIC ROUTES
-// ============================================================================
+use App\Livewire\PetKeeping\DisponibilitesPetKeeper;
+use App\Livewire\PetKeeping\PetKeeperMissionDetails;
+use App\Livewire\Babysitter\BabysitterRegistrationSuccess;
+use App\Livewire\PetKeeping\MesClients as PetKeeperClients;
+use App\Livewire\PetKeeping\MyServices as MyPetKeepingServices;
+use App\Livewire\PetKeeping\SearchService as PetKeepingService;
+use App\Livewire\PetKeeping\SingleService as SinglePetKeepingService;
+use App\Livewire\Babysitter\DisponibilitesPage as BabysitterDisponibilitesPage;
 
+
+
+
+
+
+// Public Routes
 Route::get('/', LandingPage::class)->name('home');
 Route::get('/services', ServicesPage::class)->name('services');
 
@@ -182,6 +185,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/feedback/babysitter/{idService}/{demandeId}/{auteurId}/{cibleId}/{typeAuteur?}', FeedbackComponent::class)->name('feedback.babysitter');
     Route::get('/feedback/tutoring/{idService}/{demandeId}/{auteurId}/{cibleId}/{typeAuteur?}', FeedbackComponent::class)->name('feedback.tutoring');
     Route::get('/feedback/pet-keeping/{idService}/{demandeId}/{auteurId}/{cibleId}/{typeAuteur?}', FeedbackComponent::class)->name('feedback.pet-keeping');
+
 });
 
 // ============================================================================
@@ -198,3 +202,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/intervenants', AdminIntervenants::class)->name('intervenants');
     Route::get('/intervenant/{idintervenant}/{idservice}', IntervenantDetails::class)->name('intervenant.details');
 });
+
+
+
