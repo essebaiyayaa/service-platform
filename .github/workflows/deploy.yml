@@ -32,8 +32,8 @@ jobs:
           rm -rf public
 
       # 5. Upload to Hostinger
-      - name: Deploy via SFTP
-        uses: SamKirkland/FTP-Deploy-Action@v4
+- name: Deploy via SFTP
+  uses: SamKirkland/ftp-deploy-action@v4
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USER }}
