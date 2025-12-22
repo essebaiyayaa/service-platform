@@ -30,7 +30,7 @@ class BabysitterBooking extends Component
     public $babysitterAddress = '';
     public $adresseChoice = ''; // 'babysitter' ou 'client'
     public $children = [];
-    public $currentChild = ['age' => '', 'sexe' => '', 'besoinsSpeciaux' => [], 'autresBesoins' => ''];
+    public $currentChild = ['age' => '', 'age_unit' => 'annee', 'sexe' => '', 'besoinsSpeciaux' => [], 'autresBesoins' => ''];
     public $agreedToTerms = false;
     public $showSuccess = false;
     public $message = '';
@@ -271,17 +271,83 @@ class BabysitterBooking extends Component
     public function addChild()
     {
         $age = trim($this->currentChild['age']);
+        $ageUnit = $this->currentChild['age_unit'] ?? 'annee';
         $sexe = trim($this->currentChild['sexe']);
 
+        // Catégories d'âge et intervalles (en mois)
+        $categories = [
+            'Nourrisson(0-12 mois)' => [0, 12],
+            'Bambin(1-3 ans)' => [13, 36],
+            'Maternelle(4-5 ans)' => [48, 71],
+            'Écolier(6-12 ans)' => [72, 155],
+            'Adolescent(13-18 ans)' => [156, 216],
+        ];
+
+        $babysitter = $this->getBabysitter();
+        $acceptedCategories = $babysitter['categories_enfants'] ?? [];
+
+        // Convertir l'âge en mois pour la validation
+        $ageInMonths = 0;
+        if ($ageUnit === 'mois') {
+            $ageInMonths = (int) $age;
+        } else {
+            $ageInMonths = (int) $age * 12;
+        }
+
+        // Vérifier l'âge sur les intervalles numériques des catégories acceptées
+
+        // Extraire dynamiquement les intervalles numériques depuis le nom de la catégorie
+        $intervals = [];
+        foreach ($acceptedCategories as $cat) {
+            // Cherche un intervalle du type "0-6 mois" ou "1-3 ans" dans le nom
+            if (preg_match('/(\d+)[^\d]+(\d+)\s*(mois|an|ans)/iu', $cat, $matches)) {
+                $min = (int)$matches[1];
+                $max = (int)$matches[2];
+                $unit = strtolower($matches[3]);
+                // Convertit tout en mois
+                if (str_starts_with($unit, 'an')) {
+                    $min = $min * 12;
+                    $max = $max * 12;
+                }
+                $intervals[] = [$min, $max];
+            } elseif (preg_match('/(\d+)\s*(mois|an|ans)/iu', $cat, $matches)) {
+                // Cas unique : "0-6 mois" ou "12 ans" (un seul nombre)
+                $min = (int)$matches[1];
+                $max = $min;
+                $unit = strtolower($matches[2]);
+                if (str_starts_with($unit, 'an')) {
+                    $min = $min * 12;
+                    $max = $max * 12;
+                }
+                $intervals[] = [$min, $max];
+            } elseif (isset($categories[$cat])) {
+                // fallback sur la config statique si besoin
+                $intervals[] = $categories[$cat];
+            }
+        }
+
+        $isInAcceptedInterval = false;
+        foreach ($intervals as [$min, $max]) {
+            if ($ageInMonths >= $min && $ageInMonths <= $max) {
+                $isInAcceptedInterval = true;
+                break;
+            }
+        }
+
         if (!empty($age) && is_numeric($age) && !empty($sexe)) {
+            if (!$isInAcceptedInterval) {
+                session()->flash('error', "L'âge de l'enfant ne correspond à aucun intervalle accepté par cette babysitter.");
+                return;
+            }
             $this->children[] = [
                 'id' => time() . rand(1000, 9999),
                 'age' => (int) $age,
+                'age_unit' => $ageUnit,
                 'sexe' => $sexe,
                 'besoinsSpeciaux' => $this->currentChild['besoinsSpeciaux'] ?? [],
                 'autresBesoins' => trim($this->currentChild['autresBesoins'] ?? '')
             ];
-            $this->currentChild = ['age' => '', 'sexe' => '', 'besoinsSpeciaux' => [], 'autresBesoins' => ''];
+            $this->currentChild = ['age' => '', 'age_unit' => 'annee', 'sexe' => '', 'besoinsSpeciaux' => [], 'autresBesoins' => ''];
         }
     }
 
@@ -377,15 +443,45 @@ class BabysitterBooking extends Component
                         }
 
                         // Créer un nom fictif basé sur le sexe et l'âge
-                        $nomComplet = ($child['sexe'] === 'Garçon' ? 'Garçon' : 'Fille') . ' de ' . $child['age'] . ' ans';
+                        $nomComplet = ($child['sexe'] === 'Garçon' ? 'Garçon' : 'Fille') . ' de ' . $child['age'] . ' ' . ($child['age_unit'] === 'mois' ? 'mois' : 'ans');
+
+                        // Calculer la date de naissance à partir de l'âge et de l'unité
+                        $age = (int) $child['age'];
+                        $ageUnit = $child['age_unit'] ?? 'annee';
+                        $months = $ageUnit === 'mois' ? $age : $age * 12;
+                        $dateNaissance = now()->subMonths($months)->format('Y-m-d');
+
+                        // Trouver la catégorie correspondante
+                        $categories = [
+                            'Nourrisson(0-12 mois)' => [0, 12],
+                            'Bambin(1-3 ans)' => [13, 36],
+                            'Maternelle(4-5 ans)' => [48, 71],
+                            'Écolier(6-12 ans)' => [72, 155],
+                            'Adolescent(13-18 ans)' => [156, 216],
+                        ];
+                        $idCategorie = null;
+                        foreach ($babysitter['categories_enfants'] ?? [] as $cat) {
+                            if (isset($categories[$cat])) {
+                                [$min, $max] = $categories[$cat];
+                                if ($months >= $min && $months <= $max) {
+                                    // Récupérer l'id de la catégorie
+                                    $catModel = \App\Models\Babysitting\CategorieEnfant::where('categorie', $cat)->first();
+                                    if ($catModel) {
+                                        $idCategorie = $catModel->idCategorie;
+                                    }
+                                    break;
+                                }
+                            }
+                        }
 
                         Enfant::create([
                             'nomComplet' => $nomComplet,
-                            'dateNaissance' => $this->calculateBirthDate($child['age']),
+                            'dateNaissance' => $dateNaissance,
                             'besoinsSpecifiques' => $besoinsSpecifiques,
                             'idDemande' => $demande->idDemande,
                             'id_client' => $clientId, // Ajout du client
-                            'sexe' => strtolower($child['sexe']) === 'garçon' ? 'garcon' : 'fille' // Ajout du sexe
+                            'sexe' => strtolower($child['sexe']) === 'garçon' ? 'garcon' : 'fille', // Ajout du sexe
+                            'id_categorie' => $idCategorie
                         ]);
                     }
                 }

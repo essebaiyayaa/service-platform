@@ -45,14 +45,19 @@ class SendInterventionCompletionEmails extends Command
         
         foreach ($demandes as $demande) {
             // Créer la date complète de fin d'intervention
-            $dateFinIntervention = Carbon::parse($demande->dateSouhaitee . ' ' . $demande->heureFin);
+            $dateFinIntervention = Carbon::parse($demande->heureFin);
+            
+            // Debug information
+            $this->info("Intervention #{$demande->idDemande} - Fin: {$dateFinIntervention->toDateTimeString()} - Now: {$now->toDateTimeString()} - Is Past: " . ($now->greaterThan($dateFinIntervention) ? 'YES' : 'NO'));
             
             // Vérifier si l'intervention est terminée (date de fin dépassée)
             if ($now->greaterThan($dateFinIntervention)) {
                 
                 // Vérifier si les emails ont déjà été envoyés pour éviter les doublons
                 $emailAlreadySentKey = "intervention_completed_email_sent_{$demande->idDemande}";
+                $this->info("Cache check for key: {$emailAlreadySentKey} - Exists: " . (cache()->has($emailAlreadySentKey) ? 'YES' : 'NO'));
                 if (cache()->has($emailAlreadySentKey)) {
+                    $this->info("Emails déjà envoyés pour intervention #{$demande->idDemande} - SKIP");
                     continue; // Emails déjà envoyés pour cette intervention
                 }
                 

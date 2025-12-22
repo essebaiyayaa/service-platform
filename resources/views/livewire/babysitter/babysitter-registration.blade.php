@@ -49,7 +49,8 @@
                                     @elseif($i == 2) Contact
                                     @elseif($i == 3) Pro
                                     @elseif($i == 4) Compétences
-                                    @else Documents
+                                    @elseif($i == 5)DISPONIBILITÉS
+                                    @else documents
                                     @endif
                                 </span>
                             </div>
@@ -103,7 +104,34 @@
                         <input type="email" wire:model="email"
                             class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                             placeholder="votre.email@exemple.com">
-                        @error('email') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        @error('email') 
+                            <span class="text-red-500 text-xs">{{ $message }}</span>
+                            
+                            @if($emailExistsAsIntervenant)
+                                <div class="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                    <div class="flex items-start gap-3">
+                                        <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                        </svg>
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-blue-900 mb-2">
+                                                Vous avez déjà un compte intervenant !
+                                            </p>
+                                            <p class="text-xs text-blue-700 mb-3">
+                                                Cet email est déjà enregistré comme intervenant. Accédez à votre espace pour gérer vos services.
+                                            </p>
+                                            <a href="{{ route('intervenant.hub') }}" 
+                                                class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                                                </svg>
+                                                Accéder à mon espace intervenant
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        @enderror
                     </div>
 
                     <div>
@@ -303,7 +331,7 @@
                 </div>
             @endif
 
-            <!-- ÉTAPE 4 - PROFESSIONNEL -->
+            <!-- ÉTAPE 4 - TALENTS ET QUALITÉS -->
             @if ($currentStep == 4)
                 <div class="space-y-4">
                     <div class="bg-teal-50 rounded-lg p-3 flex items-center">
@@ -510,6 +538,7 @@
                                 </label>
                             @endforeach
                         </div>
+                        </div>
                     </div>
 
                     <!-- Besoins spéciaux -->
@@ -531,7 +560,7 @@
                 </div>
             @endif
 
-            <!-- ÉTAPE 5 - EXPÉRIENCE -->
+            <!-- ÉTAPE 5 - COMPÉTENCES ET DISPONIBILITÉS -->
             @if ($currentStep == 5)
                 <div class="space-y-4">
                     <div class="bg-purple-50 rounded-lg p-3 flex items-center">

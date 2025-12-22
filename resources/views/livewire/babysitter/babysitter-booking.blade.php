@@ -202,17 +202,41 @@
                         <h2 class="text-2xl mb-6 text-black font-extrabold">
                             Quel service souhaitez-vous ?
                         </h2>
+                        <div class="mb-4">
+                            <span class="text-sm text-gray-600 font-semibold">Services proposés par cette babysitter :</span>
+                            <div class="flex flex-wrap gap-2 mt-2">
+                                @foreach($babysitter['services'] ?? [] as $srv)
+                                    <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">{{ $srv }}</span>
+                                @endforeach
+                            </div>
+                        </div>
+                        @php
+                            $iconMap = [
+                                'Aide aux devoirs' => '📚',
+                                'Travaux manuels' => '🎨',
+                                'Jeux' => '🎲',
+                                'Langues' => '🗣️',
+                                'Animaux domestiques' => '🐶',
+                                'Cuisine' => '🍳',
+                                'Tâches ménagères' => '🧹',
+                                'Musique' => '🎵',
+                                'Lecture' => '📖',
+                                'Sport' => '⚽',
+                                // Ajoutez d'autres associations ici si besoin
+                            ];
+                        @endphp
                         <div class="grid grid-cols-2 gap-4">
-                            @foreach($availableServices as $service)
-                                <button wire:click="toggleService('{{ $service['name'] }}')" type="button"
+                            @foreach($babysitter['services'] ?? [] as $srv)
+                                @php $icon = $iconMap[$srv] ?? '✨'; @endphp
+                                <button wire:click="toggleService('{{ $srv }}')" type="button"
                                     class="p-6 rounded-2xl border-2 transition-all text-center
-                                                            {{ in_array($service['name'], $selectedServices) ? 'border-[#B82E6E] bg-[#F9E0ED]' : 'border-gray-200 hover:border-gray-300 bg-white' }}">
+                                        {{ in_array($srv, $selectedServices) ? 'border-[#B82E6E] bg-[#F9E0ED]' : 'border-gray-200 hover:border-gray-300 bg-white' }}">
                                     <div class="w-16 h-16 rounded-2xl mx-auto mb-3 flex items-center justify-center"
-                                        style="background-color: {{ in_array($service['name'], $selectedServices) ? '#B82E6E' : ($service['color'] ?? '#E5E7EB') }}; opacity: {{ in_array($service['name'], $selectedServices) ? 1 : 0.15 }}">
-                                        <span class="text-4xl">{{ $service['icon'] }}</span>
+                                        style="background-color: {{ in_array($srv, $selectedServices) ? '#B82E6E' : '#E5E7EB' }}; opacity: {{ in_array($srv, $selectedServices) ? 1 : 0.15 }}">
+                                        <span class="text-4xl">{{ $icon }}</span>
                                     </div>
                                     <h4 class="text-black font-bold">
-                                        {{ $service['name'] }}
+                                        {{ $srv }}
                                     </h4>
                                 </button>
                             @endforeach
@@ -593,7 +617,9 @@
                                             </div>
                                             <div>
                                                 <p class="text-black font-bold">
-                                                    {{ $child['sexe'] }}, {{ $child['age'] }} ans
+                                                    {{ $child['sexe'] }},
+                                                    {{ $child['age'] }}
+                                                    @if(isset($child['age_unit']) && $child['age_unit'] === 'mois') mois @else an(s) @endif
                                                 </p>
                                                 @if(!empty($child['besoinsSpeciaux']) || !empty($child['autresBesoins']))
                                                     <p class="text-sm text-gray-500 font-semibold">
@@ -624,6 +650,11 @@
 
                         {{-- Formulaire d'ajout d'enfant --}}
                         <div class="bg-[#F7F7F7] rounded-2xl p-6 mb-4">
+                            @if(session('error'))
+                                <div class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                                    {{ session('error') }}
+                                </div>
+                            @endif
                             <h3 class="text-lg mb-4 text-black font-bold">
                                 {{ count($children) > 0 ? 'Ajouter un autre enfant' : 'Ajouter un enfant' }}
                             </h3>
@@ -633,9 +664,15 @@
                                         <label class="block text-sm mb-2 text-[#0a0a0a] font-bold">
                                             Âge <span class="text-red-500">*</span>
                                         </label>
-                                        <input type="number" wire:model.live="currentChild.age" placeholder="Âge en années"
-                                            min="0" max="18"
-                                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#B82E6E]" />
+                                        <div class="flex gap-2">
+                                            <input type="number" wire:model.live="currentChild.age" placeholder="Âge"
+                                                min="0" max="216"
+                                                class="w-2/3 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#B82E6E]" />
+                                            <select wire:model.live="currentChild.age_unit" class="w-1/3 px-2 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#B82E6E]">
+                                                <option value="annee">Année(s)</option>
+                                                <option value="mois">Mois</option>
+                                            </select>
+                                        </div>
                                     </div>
                                     <div>
                                         <label class="block text-sm mb-2 text-[#0a0a0a] font-bold">
@@ -797,9 +834,34 @@
                                         @if(count($children) > 0)
                                             <div class="space-y-2">
                                                 @foreach($children as $child)
+                                                    @php
+                                                        // Détermination de la catégorie exacte pour l'enfant
+                                                        $age = (int) $child['age'];
+                                                        $ageInMonths = ($child['age_unit'] ?? 'annee') === 'mois' ? $age : $age * 12;
+                                                        $catLabel = null;
+                                                        $catList = $babysitter['categories_enfants'] ?? [];
+                                                        foreach ($catList as $cat) {
+                                                            if (preg_match('/(\d+)[^\d]+(\d+)\s*(mois|an|ans)/iu', $cat, $matches)) {
+                                                                $min = (int)$matches[1];
+                                                                $max = (int)$matches[2];
+                                                                $unit = strtolower($matches[3]);
+                                                                if (str_starts_with($unit, 'an')) {
+                                                                    $min = $min * 12;
+                                                                    $max = $max * 12;
+                                                                }
+                                                                if ($ageInMonths >= $min && $ageInMonths <= $max) {
+                                                                    $catLabel = $cat;
+                                                                    break;
+                                                                }
+                                                            }
+                                                        }
+                                                    @endphp
                                                     <div class="p-2 bg-[#F7F7F7] rounded-lg">
                                                         <p class="text-black font-bold">
-                                                            {{ $child['sexe'] }}, {{ $child['age'] }} ans
+                                                            {{ $child['sexe'] }}, {{ $child['age'] }} @if(isset($child['age_unit']) && $child['age_unit'] === 'mois') mois @else an(s) @endif
+                                                            @if($catLabel)
+                                                                <span class="ml-2 text-xs text-blue-600 font-semibold">({{ $catLabel }})</span>
+                                                            @endif
                                                         </p>
                                                         @if(!empty($child['besoinsSpeciaux']) || !empty($child['autresBesoins']))
                                                             <p class="text-xs mt-1 text-gray-500 font-semibold">

@@ -14,6 +14,9 @@ Artisan::command('inspire', function () {
 // Rappels de feedback quotidiens (Client & Babysitter)
 \Illuminate\Support\Facades\Schedule::command('feedback:send-reminders')->dailyAt('11:19');
 
+// Emails de fin d'intervention (toutes les heures)
+\Illuminate\Support\Facades\Schedule::command('intervention:send-completion-emails')->everyMinute();
+
 // Commande de test pour préparer les données (TEMPORAIRE)
 \Illuminate\Support\Facades\Artisan::command('test:prepare-feedback-data', function () {
     $demande = \App\Models\Babysitting\DemandeIntervention::latest('idDemande')->first();
