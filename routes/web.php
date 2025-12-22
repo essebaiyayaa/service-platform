@@ -75,7 +75,7 @@ Route::get('/mes-demandes', \App\Livewire\Client\MesDemandes::class)->name('clie
 use App\Livewire\PetKeeping\DisponibilitesPetKeeper;
 use App\Livewire\PetKeeping\PetKeeperMissionDetails;
 use App\Http\Controllers\Api\Auth\RegisterController;
-use App\Livewire\PetKeeping\PetkeepingServiceBooking;
+use App\Livewire\PetKeeping\PetKeepingServiceBooking;
 use App\Livewire\Babysitter\BabysitterRegistrationSuccess;
 use App\Livewire\PetKeeping\MesClients as PetKeeperClients;
 use App\Livewire\PetKeeping\MyServices as MyPetKeepingServices;
