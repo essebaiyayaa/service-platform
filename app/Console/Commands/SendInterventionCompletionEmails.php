@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Shared\DemandesIntervention;
 use App\Mail\InterventionCompletedMail;
+use App\Mail\InterventionCancelledMail;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
@@ -34,16 +35,80 @@ class SendInterventionCompletionEmails extends Command
         
         $now = Carbon::now();
         
-        // Récupérer toutes les demandes validées
-        $demandes = DemandesIntervention::where('statut', 'validée')
+        // Récupérer toutes les demandes validées et annulées
+        $demandesValidees = DemandesIntervention::where('statut', 'validée')
             ->with(['client'])
             ->get();
-            
-        $this->info("{$demandes->count()} demandes validées trouvées");
-        
+        $demandesAnnulees = DemandesIntervention::where('statut', 'annulée')
+            ->with(['client'])
+            ->get();
+
+        $this->info("{$demandesValidees->count()} demandes validées trouvées");
+        $this->info("{$demandesAnnulees->count()} demandes annulées trouvées");
+
         $emailsEnvoyes = 0;
-        
-        foreach ($demandes as $demande) {
+
+        // Traitement des interventions terminées (emails de complétion)
+        foreach ($demandesValidees as $demande) {
+                    // Traitement des interventions annulées (emails d'annulation)
+                    foreach ($demandesAnnulees as $demande) {
+                        $emailAlreadySentKey = "intervention_cancelled_email_sent_{$demande->idDemande}";
+                        $this->info("Cache check for key: {$emailAlreadySentKey} - Exists: " . (cache()->has($emailAlreadySentKey) ? 'YES' : 'NO'));
+                        if (cache()->has($emailAlreadySentKey)) {
+                            $this->info("Emails d'annulation déjà envoyés pour intervention #{$demande->idDemande} - SKIP");
+                            continue;
+                        }
+                        $this->info("Envoi des emails d'annulation pour intervention #{$demande->idDemande}");
+                        cache()->put($emailAlreadySentKey, true, now()->addDays(30));
+
+                        // Envoyer l'email au client
+                        if ($demande->client && $demande->client->email) {
+                            try {
+                                $intervenantUser = \App\Models\Shared\Utilisateur::where('idUser', $demande->idIntervenant)
+                                    ->where('role', 'intervenant')
+                                    ->first();
+                                $intervenantName = $intervenantUser ?
+                                    $intervenantUser->prenom . ' ' . $intervenantUser->nom :
+                                    "l'intervenant";
+                                $reason = $demande->raisonAnnulation ?? 'Non précisé';
+                                Mail::to($demande->client->email)->send(new InterventionCancelledMail(
+                                    $demande->client->prenom . ' ' . $demande->client->nom,
+                                    $intervenantName,
+                                    $demande->dateSouhaitee ? \Carbon\Carbon::parse($demande->dateSouhaitee)->format('d/m/Y') : 'N/A',
+                                    'client',
+                                    $reason
+                                ));
+                                $this->info("Email d'annulation client envoyé à " . $demande->client->email);
+                                $emailsEnvoyes++;
+                            } catch (\Exception $e) {
+                                $this->error("Erreur envoi email d'annulation client: " . $e->getMessage());
+                            }
+                        }
+
+                        // Envoyer l'email à l'intervenant
+                        $intervenantUser = \App\Models\Shared\Utilisateur::where('idUser', $demande->idIntervenant)
+                            ->where('role', 'intervenant')
+                            ->first();
+                        if ($intervenantUser && $intervenantUser->email) {
+                            try {
+                                $clientName = $demande->client ?
+                                    ($demande->client->prenom . ' ' . $demande->client->nom) :
+                                    'le client';
+                                $reason = $demande->raisonAnnulation ?? 'Non précisé';
+                                Mail::to($intervenantUser->email)->send(new InterventionCancelledMail(
+                                    $intervenantUser->prenom . ' ' . $intervenantUser->nom,
+                                    $clientName,
+                                    $demande->dateSouhaitee ? \Carbon\Carbon::parse($demande->dateSouhaitee)->format('d/m/Y') : 'N/A',
+                                    'intervenant',
+                                    $reason
+                                ));
+                                $this->info("Email d'annulation intervenant envoyé à " . $intervenantUser->email);
+                                $emailsEnvoyes++;
+                            } catch (\Exception $e) {
+                                $this->error("Erreur envoi email d'annulation intervenant: " . $e->getMessage());
+                            }
+                        }
+                    }
             // Créer la date complète de fin d'intervention
             $dateFinIntervention = Carbon::parse($demande->heureFin);
             
