@@ -238,7 +238,15 @@ class AdminIntervenants extends Component
                 'utilisateurs.telephone',
                 'utilisateurs.photo',
                 'localisations.ville',
+<<<<<<< HEAD
                 'localisations.adresse'
+=======
+                'localisations.adresse',
+                'os.idintervenant',
+                'os.idService',
+                'os.statut as offre_statut',
+                DB::raw("CASE WHEN babysitters.idBabysitter IS NOT NULL THEN 'Babysitting' WHEN petkeepers.idPetKeeper IS NOT NULL THEN 'Pet Keeping' WHEN services.nomService IS NOT NULL THEN services.nomService ELSE 'Service' END as nomService")
+>>>>>>> ffdbfb78584b4c4cc40e6c2646b76c9b3b95cfac
             );
 
         // Filtre de recherche
@@ -251,15 +259,31 @@ class AdminIntervenants extends Component
             });
         }
 
+<<<<<<< HEAD
         // Filtre de statut
         if ($this->statusFilter !== 'tous') {
             $query->where('intervenants.statut', strtoupper($this->statusFilter));
+=======
+        // Filtre de statut basé STRICTEMENT sur le statut de l'intervenant en base
+        if ($this->statusFilter !== 'tous') {
+            $validStatuses = ['ACTIVE', 'VALIDE', 'VALIDÉ'];
+            $refusedStatuses = ['ARCHIVED', 'REFUSE', 'REFUSÉ'];
+
+            if ($this->statusFilter === 'en_attente') {
+                $query->where('intervenants.statut', 'EN_ATTENTE');
+            } elseif ($this->statusFilter === 'valide') {
+                $query->whereIn('intervenants.statut', $validStatuses);
+            } elseif ($this->statusFilter === 'refuse') {
+                $query->whereIn('intervenants.statut', $refusedStatuses);
+            }
+>>>>>>> ffdbfb78584b4c4cc40e6c2646b76c9b3b95cfac
         }
 
         $intervenants = $query->orderBy('intervenants.created_at', 'desc')->paginate(10);
 
         // Charger les données spécifiques pour chaque intervenant
         foreach ($intervenants as $intervenant) {
+<<<<<<< HEAD
             $this->loadIntervenantTypeData($intervenant);
         }
 
@@ -269,6 +293,28 @@ class AdminIntervenants extends Component
             'en_attente' => Intervenant::where('statut', 'EN_ATTENTE')->count(),
             'valides' => Intervenant::where('statut', 'VALIDE')->count(),
             'refuses' => Intervenant::where('statut', 'REFUSE')->count(),
+=======
+            $this->loadOffreTypeData($intervenant);
+            // Afficher exactement l'état en base de l'intervenant (normalisé)
+            $intervenant->statut = $this->normalizeStatus($intervenant->intervenant_statut ?? null);
+            // Injecter un idService résolu si absent (pour activer le lien détails)
+            if (empty($intervenant->idService) && isset($intervenant->derivedServiceId)) {
+                $intervenant->idService = $intervenant->derivedServiceId;
+            }
+        }
+
+        // Statistiques basées sur le statut combiné
+        $baseStatsQuery = DB::table('intervenants')
+            ->leftJoin('offres_services as os', 'os.idintervenant', '=', 'intervenants.IdIntervenant');
+
+        $validStatuses = ['ACTIVE', 'VALIDE', 'VALIDÉ'];
+        $refusedStatuses = ['ARCHIVED', 'REFUSE', 'REFUSÉ'];
+        $stats = [
+            'total' => (clone $baseStatsQuery)->count(),
+            'en_attente' => (clone $baseStatsQuery)->where('intervenants.statut', 'EN_ATTENTE')->count(),
+            'valides' => (clone $baseStatsQuery)->whereIn('intervenants.statut', $validStatuses)->count(),
+            'refuses' => (clone $baseStatsQuery)->whereIn('intervenants.statut', $refusedStatuses)->count(),
+>>>>>>> ffdbfb78584b4c4cc40e6c2646b76c9b3b95cfac
         ];
 
         return view('livewire.shared.admin.admin-intervenants', [
@@ -346,4 +392,18 @@ class AdminIntervenants extends Component
         $intervenant->service_icon = '💼';
         $intervenant->service_details = 'Intervenant';
     }
+<<<<<<< HEAD
 }
+=======
+
+    private function normalizeStatus($status)
+    {
+        if (!$status) return null;
+        $status = strtoupper($status);
+        if (in_array($status, ['ACTIVE', 'VALIDE', 'VALIDÉ'])) return 'VALIDE';
+        if (in_array($status, ['ARCHIVED', 'REFUSE', 'REFUSÉ'])) return 'REFUSE';
+        if (in_array($status, ['EN_ATTENTE'])) return 'EN_ATTENTE';
+        return $status; // fallback
+    }
+}
+>>>>>>> ffdbfb78584b4c4cc40e6c2646b76c9b3b95cfac
