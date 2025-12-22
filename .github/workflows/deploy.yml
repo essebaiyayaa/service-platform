@@ -10,31 +10,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Get code
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Setup PHP
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
           tools: composer
 
-      # 3. Install dependencies
       - name: Install Composer dependencies
         run: composer install --no-dev --optimize-autoloader
 
-      # 4. Prepare files for shared hosting
       - name: Prepare files for shared hosting
         run: |
           cp -r public/* .
           rm -rf public
 
-      # 5. Upload to Hostinger
       - name: Deploy via SFTP
-        uses: SamKirkland/FTP-deploy-Action@v4
-        witha
+        uses: SamKirkland/FTP-Deploy-Action@v4
+        with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASS }}
