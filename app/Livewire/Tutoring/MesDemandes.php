@@ -23,8 +23,8 @@ class MesDemandes extends Component
     public $selectedTab = 'en_attente';
     public $showAdvancedFilters = false;
     public $datePeriod = 'all';
-    public $cityFilter = '';
     public $filterMatiere = 'all';
+    public $filterNiveau = 'all';
     
     // --- DEBUG VARIABLES ---
     public $debugInfo = [];
@@ -139,6 +139,38 @@ class MesDemandes extends Component
         ];
     }
 
+    // Récupère les matières que ce professeur propose
+    #[Computed]
+    public function matieresProfesseur()
+    {
+        $userId = Auth::id();
+        
+        return DB::table('services_prof')
+            ->join('matieres', 'services_prof.matiere_id', '=', 'matieres.id_matiere')
+            ->where('services_prof.professeur_id', $userId)
+            ->select('matieres.nom_matiere')
+            ->distinct()
+            ->orderBy('matieres.nom_matiere')
+            ->pluck('nom_matiere')
+            ->toArray();
+    }
+
+    // Récupère les niveaux que ce professeur propose
+    #[Computed]
+    public function niveauxProfesseur()
+    {
+        $userId = Auth::id();
+        
+        return DB::table('services_prof')
+            ->join('niveaux', 'services_prof.niveau_id', '=', 'niveaux.id_niveau')
+            ->where('services_prof.professeur_id', $userId)
+            ->select('niveaux.nom_niveau')
+            ->distinct()
+            ->orderBy('niveaux.nom_niveau')
+            ->pluck('nom_niveau')
+            ->toArray();
+    }
+
     // --- MÉTHODE CALCULÉE AVEC FILTRES ---
     #[Computed]
     public function demandes()
@@ -178,9 +210,9 @@ class MesDemandes extends Component
             $query->where('matieres.nom_matiere', $this->filterMatiere);
         }
 
-        // Filtre par ville
-        if (!empty($this->cityFilter)) {
-            $query->where('localisations.ville', 'like', '%' . $this->cityFilter . '%');
+        // Filtre par niveau
+        if ($this->filterNiveau !== 'all') {
+            $query->where('niveaux.nom_niveau', $this->filterNiveau);
         }
 
         // Filtre par période de date
@@ -230,12 +262,14 @@ class MesDemandes extends Component
                 'demandes_intervention.heureFin',
                 'demandes_intervention.statut',
                 'demandes_intervention.idService',
+                'demandes_intervention.lieu',
                 'utilisateurs.nom as client_nom',
                 'utilisateurs.prenom as client_prenom',
                 'utilisateurs.photo as client_photo',
                 'utilisateurs.email as client_email',
                 'utilisateurs.telephone as client_tel',
                 'demandes_prof.montant_total',
+                'services_prof.type_service',
                 'matieres.nom_matiere',
                 'niveaux.nom_niveau',
                 'localisations.adresse as client_adresse',

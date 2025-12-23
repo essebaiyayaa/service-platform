@@ -29,9 +29,9 @@
                             <div>
                                 <p class="text-xs font-bold text-gray-400 uppercase mb-2">Trier par</p>
                                 <select wire:model.live="filterSort" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="recent"> Plus récent d'abord</option>
-                                    <option value="ancien"> Plus ancien d'abord</option>
-                                    <option value="date_proche"> Date proche</option>
+                                    <option value="recent"> Demande la plus récente</option>
+                                    <option value="ancien"> Demande la plus ancienne</option>
+                                    <option value="date_proche"> Cours le plus proche</option>
                                     <option value="prix_haut"> Prix décroissant</option>
                                     <option value="prix_bas"> Prix croissant</option>
                                 </select>
@@ -55,18 +55,26 @@
                                         <p class="text-xs font-bold text-gray-400 uppercase mb-2">Matière</p>
                                         <select wire:model.live="filterMatiere" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                                             <option value="all">Toutes les matières</option>
-                                            <option value="Mathématiques">Mathématiques</option>
-                                            <option value="Physique-Chimie">Physique-Chimie</option>
-                                            <option value="Français">Français</option>
-                                            <option value="Anglais">Anglais</option>
-                                            <option value="Arabe">Arabe</option>
-                                            <option value="SVT">SVT</option>
+                                            @foreach($this->matieresProfesseur as $matiere)
+                                                <option value="{{ $matiere }}">{{ $matiere }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    <!-- Filtre Niveau -->
+                                    <div>
+                                        <p class="text-xs font-bold text-gray-400 uppercase mb-2">Niveau</p>
+                                        <select wire:model.live="filterNiveau" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <option value="all">Tous les niveaux</option>
+                                            @foreach($this->niveauxProfesseur as $niveau)
+                                                <option value="{{ $niveau }}">{{ $niveau }}</option>
+                                            @endforeach
                                         </select>
                                     </div>
 
                                     <!-- Filtre Période -->
                                     <div>
-                                        <p class="text-xs font-bold text-gray-400 uppercase mb-2">Période</p>
+                                        <p class="text-xs font-bold text-gray-400 uppercase mb-2">Date du cours</p>
                                         <select wire:model.live="datePeriod" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                                             <option value="all">Toutes les dates</option>
                                             <option value="today">Aujourd'hui</option>
@@ -75,22 +83,14 @@
                                         </select>
                                     </div>
 
-                                    <!-- Filtre Ville -->
-                                    <div>
-                                        <p class="text-xs font-bold text-gray-400 uppercase mb-2">Ville</p>
-                                        <input type="text" 
-                                               wire:model.live.debounce.300ms="cityFilter" 
-                                               placeholder="Filtrer par ville..."
-                                               class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    </div>
-
                                     <!-- Bouton Reset -->
-                                    <button wire:click="$set('filterMatiere', 'all'); $set('datePeriod', 'all'); $set('cityFilter', ''); $set('filterSort', 'recent')" 
-                                            class="w-full py-2 bg-gray-100 text-gray-700 font-medium text-sm rounded-lg hover:bg-gray-200 transition-colors">
+                                    <button wire:click="$set('filterMatiere','all'); $set('filterNiveau','all'); $set('datePeriod','all'); $set('filterSort','recent')" class="w-full py-2 bg-gray-100 text-gray-700 font-medium text-sm rounded-lg hover:bg-gray-200 transition-colors">
                                         Réinitialiser les filtres
                                     </button>
                                 </div>
                             @endif
+                                </div>
+                           
                         </div>
                     </div>
                 @endif
@@ -189,15 +189,6 @@
                                         {{ $demande->nom_niveau ?? 'Lycée' }}
                                     </span>
                                 </div>
-                                
-                                <div class="text-xs text-gray-600 space-y-1">
-                                    @if($demande->client_adresse)
-                                        <p class="flex items-center gap-1">
-                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-1.414 0l-5.648-5.648a1 1 0 01-.174-.223L4.343 8.343A2 2 0 012 6.586V4a2 2 0 012-2h14a2 2 0 012 2v2.586a2 2 0 01-.343 1.657l-4.835 4.835a1 1 0 01-.174.223z"></path></svg>
-                                            {{ $demande->client_adresse }}, {{ $demande->client_ville }}
-                                        </p>
-                                    @endif
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -217,9 +208,15 @@
                         <div class="flex items-start gap-3">
                             <div class="text-gray-400 mt-0.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-1.414 0l-5.648-5.648a1 1 0 01-.174-.223L4.343 8.343A2 2 0 012 6.586V4a2 2 0 012-2h14a2 2 0 012 2v2.586a2 2 0 01-.343 1.657l-4.835 4.835a1 1 0 01-.174.223z"></path></svg></div>
                             <div>
-                                <p class="text-xs text-gray-400 font-bold uppercase mb-0.5">Adresse</p>
+                                <p class="text-xs text-gray-400 font-bold uppercase mb-0.5">Mode du cours</p>
                                 <p class="text-sm font-semibold text-gray-800 break-words">
-                                    {{ $demande->client_adresse ?? 'En ligne' }} {{ $demande->client_ville }}
+                                    @if($demande->lieu === 'En ligne')
+                                        En ligne
+                                    @else
+                                        A Domicil <br>
+                                        <p class="text-xs text-gray-400 font-bold uppercase mb-0.5">Lieu </p>
+                                        {{ $demande->lieu }}
+                                    @endif
                                 </p>
                             </div>
                         </div>
