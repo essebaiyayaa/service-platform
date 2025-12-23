@@ -49,9 +49,9 @@
                         <td class="label">Lieu</td>
                         <td class="value">
                             @if($data['type_service'] === 'enligne')
-                                En ligne 
+                                Cours en ligne (Visioconférence)
                             @else
-                                À votre domicile
+                                {{ $data['client_adresse'] ?? 'À votre domicile' }}, {{ $data['client_ville'] ?? '' }}
                             @endif
                         </td>
                     </tr>

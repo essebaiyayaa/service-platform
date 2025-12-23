@@ -6,7 +6,7 @@
     {{-- CONTENU PRINCIPAL --}}
     <main class="flex-1 overflow-y-auto p-8">
         
-        <!-- Titre + Filtre -->
+       <!-- Titre + Filtre -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl font-extrabold text-gray-900">Gestion des demandes</h1>
@@ -23,25 +23,73 @@
                 </button>
 
                 @if($showFilters)
-                    <div class="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 p-4 z-50">
+                    <div class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 p-4 z-50">
                         <div class="space-y-4">
+                            <!-- Trier par -->
                             <div>
                                 <p class="text-xs font-bold text-gray-400 uppercase mb-2">Trier par</p>
                                 <select wire:model.live="filterSort" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="recent">📅 Plus récent d'abord</option>
-                                    <option value="ancien">📅 Plus ancien d'abord</option>
-                                    <option value="prix_decroissant">💰 Prix décroissant</option>
-                                    <option value="prix_croissant">💰 Prix croissant</option>
+                                    <option value="recent"> Demande la plus récente</option>
+                                    <option value="ancien"> Demande la plus ancienne</option>
+                                    <option value="date_proche"> Cours le plus proche</option>
+                                    <option value="prix_haut"> Prix décroissant</option>
+                                    <option value="prix_bas"> Prix croissant</option>
                                 </select>
                             </div>
-                            <div>
-                                <p class="text-xs font-bold text-gray-400 uppercase mb-2">Type de cours</p>
-                                <div class="space-y-2">
-                                    <label class="flex items-center gap-2 cursor-pointer"><input type="radio" wire:model.live="filterType" value="all" class="text-blue-600 focus:ring-blue-500"><span class="text-sm text-gray-700">Tout afficher</span></label>
-                                    <label class="flex items-center gap-2 cursor-pointer"><input type="radio" wire:model.live="filterType" value="enligne" class="text-blue-600 focus:ring-blue-500"><span class="text-sm text-gray-700">En ligne (Visio)</span></label>
-                                    <label class="flex items-center gap-2 cursor-pointer"><input type="radio" wire:model.live="filterType" value="domicile" class="text-blue-600 focus:ring-blue-500"><span class="text-sm text-gray-700">À Domicile</span></label>
+
+                            <!-- Divider -->
+                            <div class="border-t border-gray-200"></div>
+
+                            <!-- Filtres Avancés Toggle -->
+                            <button wire:click="toggleAdvancedFilters" class="w-full flex items-center justify-between text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">
+                                <span>Filtres avancés</span>
+                                <svg class="w-4 h-4 transition-transform {{ $showAdvancedFilters ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+
+                            @if($showAdvancedFilters)
+                                <div class="space-y-4 pt-2">
+                                    <!-- Filtre Matière -->
+                                    <div>
+                                        <p class="text-xs font-bold text-gray-400 uppercase mb-2">Matière</p>
+                                        <select wire:model.live="filterMatiere" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <option value="all">Toutes les matières</option>
+                                            @foreach($this->matieresProfesseur as $matiere)
+                                                <option value="{{ $matiere }}">{{ $matiere }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    <!-- Filtre Niveau -->
+                                    <div>
+                                        <p class="text-xs font-bold text-gray-400 uppercase mb-2">Niveau</p>
+                                        <select wire:model.live="filterNiveau" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <option value="all">Tous les niveaux</option>
+                                            @foreach($this->niveauxProfesseur as $niveau)
+                                                <option value="{{ $niveau }}">{{ $niveau }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    <!-- Filtre Période -->
+                                    <div>
+                                        <p class="text-xs font-bold text-gray-400 uppercase mb-2">Date du cours</p>
+                                        <select wire:model.live="datePeriod" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <option value="all">Toutes les dates</option>
+                                            <option value="today">Aujourd'hui</option>
+                                            <option value="week">Cette semaine</option>
+                                            <option value="month">Ce mois</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Bouton Reset -->
+                                    <button wire:click="$set('filterMatiere','all'); $set('filterNiveau','all'); $set('datePeriod','all'); $set('filterSort','recent')" class="w-full py-2 bg-gray-100 text-gray-700 font-medium text-sm rounded-lg hover:bg-gray-200 transition-colors">
+                                        Réinitialiser les filtres
+                                    </button>
                                 </div>
-                            </div>
+                            @endif
+
                         </div>
                     </div>
                 @endif
@@ -140,15 +188,6 @@
                                         {{ $demande->nom_niveau ?? 'Lycée' }}
                                     </span>
                                 </div>
-                                
-                                <div class="text-xs text-gray-600 space-y-1">
-                                    @if($demande->client_adresse)
-                                        <p class="flex items-center gap-1">
-                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-1.414 0l-5.648-5.648a1 1 0 01-.174-.223L4.343 8.343A2 2 0 012 6.586V4a2 2 0 012-2h14a2 2 0 012 2v2.586a2 2 0 01-.343 1.657l-4.835 4.835a1 1 0 01-.174.223z"></path></svg>
-                                            {{ $demande->client_adresse }}, {{ $demande->client_ville }}
-                                        </p>
-                                    @endif
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -168,9 +207,15 @@
                         <div class="flex items-start gap-3">
                             <div class="text-gray-400 mt-0.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-1.414 0l-5.648-5.648a1 1 0 01-.174-.223L4.343 8.343A2 2 0 012 6.586V4a2 2 0 012-2h14a2 2 0 012 2v2.586a2 2 0 01-.343 1.657l-4.835 4.835a1 1 0 01-.174.223z"></path></svg></div>
                             <div>
-                                <p class="text-xs text-gray-400 font-bold uppercase mb-0.5">Adresse</p>
+                                <p class="text-xs text-gray-400 font-bold uppercase mb-0.5">Mode du cours</p>
                                 <p class="text-sm font-semibold text-gray-800 break-words">
-                                    {{ $demande->client_adresse ?? 'En ligne' }} {{ $demande->client_ville }}
+                                    @if($demande->lieu === 'En ligne')
+                                        En ligne
+                                    @else
+                                        A Domicil <br>
+                                        <p class="text-xs text-gray-400 font-bold uppercase mb-0.5">Lieu </p>
+                                        {{ $demande->lieu }}
+                                    @endif
                                 </p>
                             </div>
                         </div>
