@@ -51,10 +51,16 @@ class Dashboard extends Component
         $this->note = $moyenne ? number_format($moyenne, 1) : '-';
 
         // 1. KPI (Statistiques)
-        $this->coursActifs = DB::table('demandes_intervention')
-            ->where('idIntervenant', $userId)
-            ->where('statut', 'validée')
-            ->count();
+        $professeurId = DB::table('professeurs')
+            ->where('intervenant_id', $userId)
+            ->value('id_professeur');
+
+        $this->coursActifs = $professeurId
+            ? DB::table('services_prof')
+                ->where('professeur_id', $professeurId)
+                ->where('status', 'actif')
+                ->count()
+            : 0;
 
         $this->enAttente = DB::table('demandes_intervention')
             ->where('idIntervenant', $userId)
