@@ -9,12 +9,10 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use App\Mail\ReponseDemandeClient;
 use App\Mail\ConfirmationActionProf;
-use Livewire\Attributes\Computed; // Important pour la magie
+use Livewire\Attributes\Computed; 
 
 class MesDemandes extends Component
 {
-    public $prenom;
-    public $photo;
     
     // --- VARIABLES FILTRES ---
     public $showFilters = false; 
@@ -33,15 +31,9 @@ class MesDemandes extends Component
     // -------------------------
 
     // Note : On retire "public $demandes" car on utilise la méthode calculée ci-dessous
-   public function goToHub()
-    {
-        return redirect()->route('intervenant.hub');
-    }
+
     public function mount()
     {
-        $user = Auth::user();
-        $this->prenom = $user->prenom;
-        $this->photo = $user->photo;
         
         // Collecter les infos de debug au chargement
         $this->collectDebugInfo();
@@ -208,7 +200,6 @@ class MesDemandes extends Component
                 'demandes_intervention.heureFin',
                 'demandes_intervention.statut',
                 'demandes_intervention.idService',
-                'demandes_intervention.lieu',
                 'utilisateurs.nom as client_nom',
                 'utilisateurs.prenom as client_prenom',
                 'utilisateurs.photo as client_photo',
@@ -304,13 +295,6 @@ class MesDemandes extends Component
 
         // Pas besoin de recharger manuellement, la propriété #[Computed] le fera toute seule au prochain affichage !
         session()->flash('success', "La demande a été " . $nouveauStatut . " avec succès. Emails envoyés !");
-    }
-
-    public function logout() {
-        Auth::logout();
-        session()->invalidate();
-        session()->regenerateToken();
-        return redirect('/');
     }
 
     public function render()
