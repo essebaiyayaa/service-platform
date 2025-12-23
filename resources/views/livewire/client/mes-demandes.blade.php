@@ -211,7 +211,7 @@
                     <!-- RIGHT SECTION -->
                     <div class="text-right space-y-1.5 min-w-[160px]">
                         <div>
-                            <p class="text-xs text-gray-500">Prix estimé</p>
+                            <p class="text-xs text-gray-500">Prix Total</p>
                             <p class="text-2xl font-extrabold text-gray-900">
                                 {{ $demande->prix_estime ?? 0 }} MAD
                             </p>
@@ -308,9 +308,9 @@
                         {{ ucfirst(str_replace('_', ' ', $selectedDemande->statut)) }}
                     </span>
 
-                    <!-- Prix estimé -->
+                    <!-- Prix  -->
                     <div class="ml-auto bg-blue-50 px-4 py-1.5 rounded-full">
-                        <span class="text-xs font-semibold text-blue-600">Prix estimé:</span>
+                        <span class="text-xs font-semibold text-blue-600">Prix Total:</span>
                         <span class="text-sm font-bold text-blue-900 ml-1">{{ $selectedDemande->prix_estime ?? 0 }} MAD</span>
                     </div>
                 </div>
@@ -468,19 +468,6 @@
 
             <!-- Pied du modal -->
             <div class="bg-gray-50 px-6 py-4 rounded-b-2xl flex justify-between items-center">
-                <!-- Bouton Annuler (seulement si statut = en_attente ou validée) -->
-                @if(in_array($selectedDemande->statut, ['en_attente', 'validée']))
-                <button wire:click="annulerDemande({{ $selectedDemande->idDemande }}); closeModal();" 
-                        wire:confirm="Êtes-vous sûr de vouloir annuler cette demande ?"
-                        class="px-4 py-2.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors duration-200 flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    Annuler la demande
-                </button>
-                @else
-                <div></div>
-                @endif
 
                 <button wire:click="closeModal" 
                         class="px-5 py-2.5 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors duration-200 flex items-center gap-2">
