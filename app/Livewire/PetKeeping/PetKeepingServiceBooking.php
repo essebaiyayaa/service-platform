@@ -32,7 +32,10 @@ class PetKeepingServiceBooking extends Component
     public $email = '';
     public $telephone = '';
     public $ville = '';
+    public $pays = '';
     public $adresse = '';
+    public $longitude = 0;
+    public $latitude = 0;
     
     // Étape 2: Dates et Créneaux  
     public $dateDebut;
@@ -82,6 +85,11 @@ class PetKeepingServiceBooking extends Component
 
     public function mount($IdService)
     {
+        $user = Auth::user();
+
+        if($user == null || $user->role != 'client'){
+            return redirect()->route('login');
+        }
         $this->petkeepingId = $IdService;
         
         $this->loadServiceWithPetkeeping();
@@ -565,8 +573,8 @@ class PetKeepingServiceBooking extends Component
                 [
                     'ville' => $this->ville,
                     'adresse' => $this->adresse,
-                    'latitude' => 0,
-                    'longitude' => 0,
+                    'latitude' => $this->latitude,
+                    'longitude' => $this->longitude,
                     'updated_at' => now(),
                 ]
             );

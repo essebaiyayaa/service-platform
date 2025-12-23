@@ -46,17 +46,21 @@
                                     <h1 class="text-3xl font-bold text-gray-900">{{ $user->prenom }} {{ $user->nom }}</h1>
                                     <p class="text-gray-500 mt-1.5 text-base">{{ $user->email }}</p>
                                 </div>
-                                @if($offre->statut === 'EN_ATTENTE')
-                                    <span class="px-4 py-2 inline-flex text-sm font-semibold rounded-full bg-yellow-100 text-yellow-700">
-                                        En attente
-                                    </span>
-                                @elseif($offre->statut === 'ACTIVE')
+                                @php
+                                    // Prioriser le statut de l'offre si elle est EN_ATTENTE (cas 2ème service)
+                                    $status = strtoupper($offre->statut ?? $intervenant->statut ?? 'EN_ATTENTE');
+                                @endphp
+                                @if(in_array($status, ['VALIDE','VALIDÉ','ACTIVE']))
                                     <span class="px-4 py-2 inline-flex text-sm font-semibold rounded-full bg-green-100 text-green-700">
                                         Acceptée
                                     </span>
-                                @else
+                                @elseif(in_array($status, ['REFUSE','REFUSÉ','ARCHIVED']))
                                     <span class="px-4 py-2 inline-flex text-sm font-semibold rounded-full bg-red-100 text-red-700">
                                         Refusée
+                                    </span>
+                                @else
+                                    <span class="px-4 py-2 inline-flex text-sm font-semibold rounded-full bg-yellow-100 text-yellow-700">
+                                        En attente
                                     </span>
                                 @endif
                             </div>
@@ -220,10 +224,24 @@
                                             <span class="text-sm text-gray-500 w-32">Expérience:</span>
                                             <span class="text-sm font-medium text-gray-900">{{ $babysitterData->expAnnee ?? 0 }} années</span>
                                         </div>
-                                        @if($babysitterData->langues)
+                                        @if(!empty($babysitterData->langues))
                                             <div class="flex items-center gap-3">
                                                 <span class="text-sm text-gray-500 w-32">Langues:</span>
-                                                <span class="text-sm font-medium text-gray-900">{{ $babysitterData->langues }}</span>
+                                                <span class="text-sm font-medium text-gray-900">
+                                                    {{ is_array($babysitterData->langues) ? implode(', ', $babysitterData->langues) : $babysitterData->langues }}
+                                                </span>
+                                            </div>
+                                        @endif
+                                        @if(!empty($babysitterData->niveau_etudes))
+                                            <div class="flex items-center gap-3">
+                                                <span class="text-sm text-gray-500 w-32">Niveau d'études:</span>
+                                                <span class="text-sm font-medium text-gray-900">{{ $babysitterData->niveau_etudes }}</span>
+                                            </div>
+                                        @endif
+                                        @if(!empty($babysitterData->preference_domicil_human))
+                                            <div class="flex items-center gap-3">
+                                                <span class="text-sm text-gray-500 w-32">Lieu de travail:</span>
+                                                <span class="text-sm font-medium text-gray-900">{{ $babysitterData->preference_domicil_human }}</span>
                                             </div>
                                         @endif
                                     </div>
@@ -266,6 +284,17 @@
                                         </div>
                                     @endif
 
+                                    @if(!empty($babysitterData->experiences_speciaux))
+                                        <div class="pt-4 border-t border-gray-100">
+                                            <p class="text-sm font-semibold text-gray-900 mb-3">🧩 Expérience avec besoins spéciaux</p>
+                                            <div class="flex flex-wrap gap-2">
+                                                @foreach($babysitterData->experiences_speciaux as $exp)
+                                                    <span class="px-3 py-1.5 bg-indigo-50 text-indigo-700 text-xs font-medium rounded-full border border-indigo-100">{{ $exp }}</span>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
+
                                     @if($babysitterData->formations && count($babysitterData->formations) > 0)
                                         <div class="pt-4 border-t border-gray-100">
                                             <p class="text-sm font-semibold text-gray-900 mb-3">🎓 Formations</p>
@@ -283,6 +312,17 @@
                                             <div class="flex flex-wrap gap-2">
                                                 @foreach($babysitterData->categories as $categorie)
                                                     <span class="px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-100">{{ $categorie }}</span>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    @if(!empty($babysitterData->maladies_list))
+                                        <div class="pt-4 border-t border-gray-100">
+                                            <p class="text-sm font-semibold text-gray-900 mb-3">⚕️ Problèmes de santé / maladies</p>
+                                            <div class="flex flex-wrap gap-2">
+                                                @foreach($babysitterData->maladies_list as $mal)
+                                                    <span class="px-3 py-1.5 bg-red-50 text-red-700 text-xs font-medium rounded-full border border-red-100">{{ $mal }}</span>
                                                 @endforeach
                                             </div>
                                         </div>

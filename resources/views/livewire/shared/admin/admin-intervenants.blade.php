@@ -107,6 +107,29 @@
                             <option value="refuse">Refusés</option>
                         </select>
                     </div>
+
+                    {{-- Date Filter --}}
+                    <div class="w-full md:w-48">
+                        <select 
+                            wire:model.live="dateFilter"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                            <option value="plus_recent">Plus récent</option>
+                            <option value="plus_ancien">Plus ancien</option>
+                            <option value="date_specifique">Date spécifique</option>
+                        </select>
+                    </div>
+
+                    {{-- Date Input (shown when date_specifique is selected) --}}
+                    @if($dateFilter === 'date_specifique')
+                        <div class="w-full md:w-56">
+                            <input 
+                                type="date" 
+                                wire:model.live="dateSpecifique"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                        </div>
+                    @endif
                 </div>
             </div>
 
@@ -159,13 +182,17 @@
                                         <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
                                             En attente
                                         </span>
-                                    @elseif($intervenant->statut === 'ACTIVE')
+                                    @elseif(in_array($intervenant->statut, ['ACTIVE','VALIDE']))
                                         <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                             Validé
                                         </span>
-                                    @else
+                                    @elseif(in_array($intervenant->statut, ['ARCHIVED','REFUSE']))
                                         <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
                                             Refusé
+                                        </span>
+                                    @else
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                            {{ ucfirst(strtolower(str_replace('_', ' ', $intervenant->statut))) }}
                                         </span>
                                     @endif
                                 </td>

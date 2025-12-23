@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Collection;
 use Livewire\Component;
 
 class SearchService extends Component
@@ -21,7 +22,7 @@ class SearchService extends Component
     public $serviceType = 'all';
     public $location = '';
     public $minPrice = 0;
-    public $maxPrice = 100;
+    public $maxPrice = null;
     public $minRating = 0;
     public $minRatingPetKeeper = 0;
     public $serviceCategory = '';
@@ -29,6 +30,8 @@ class SearchService extends Component
     public $vaccinationRequired = false;
     public $acceptsUntrainedPets = false;
     public $acceptsAggressivePets = false;
+    public $startTime = null;
+    public $endTime = null;
 
     public $services = [];
     
@@ -53,6 +56,7 @@ class SearchService extends Component
     public $currentPage = 1;
     public $perPage = 3;
     public $countries = ['Morocco', 'France'];
+    public $petKeepersMap = [];
 
     public function mount()
     {
@@ -205,10 +209,11 @@ class SearchService extends Component
         }
 
         // Price Range
-        if (!empty($this->minPrice)) {
+        if ($this->minPrice > 0) {
             $query->where('pk.base_price', '>=', $this->minPrice);
         }
-        if (!empty($this->maxPrice)) {
+
+        if ($this->maxPrice !== null && $this->maxPrice > 0) {
             $query->where('pk.base_price', '<=', $this->maxPrice);
         }
 
@@ -254,6 +259,7 @@ class SearchService extends Component
                 break;
         }
     }
+
 
     public function updateMapMarkers()
     {
@@ -427,26 +433,7 @@ class SearchService extends Component
 
     public function loadCities()
     {
-        $cacheKey = 'morocco_cities';
-        $cacheDuration = now()->addDays(30);
-        
-        $this->cities = Cache::remember($cacheKey, $cacheDuration, function () {
-            // Get distinct cities from localisations table
-            $dbCities = DB::table('localisations')
-                ->select('ville')
-                ->distinct()
-                ->whereNotNull('ville')
-                ->where('ville', '!=', '')
-                ->orderBy('ville')
-                ->pluck('ville')
-                ->toArray();
-            
-            if (!empty($dbCities)) {
-                return $dbCities;
-            }
-            
-            // Fallback to static Moroccan cities if database is empty
-            return [
+        $this->cities = [
                 'Casablanca',
                 'Rabat',
                 'Fès',
@@ -468,7 +455,6 @@ class SearchService extends Component
                 'Settat',
                 'Khémisset'
             ];
-        });
     }
 
     public function updatedSelectedCity()
@@ -560,7 +546,7 @@ class SearchService extends Component
         $this->serviceType = 'all';
         $this->location = '';
         $this->minPrice = 0;
-        $this->maxPrice = 100;
+        $this->maxPrice = null;
         $this->minRating = 0;
         $this->minRatingPetKeeper = 0;
         $this->serviceCategory = '';
@@ -593,6 +579,7 @@ class SearchService extends Component
             'services' => $this->services,
             'totalPages' => ceil(count($this->services) / $this->perPage),
             'mapMarkers' => $this->mapMarkers,
+            'petKeepersMap' => $this->petKeepersMap,
             'cities' => $this->cities,
         ]);
     }

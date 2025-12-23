@@ -1,5 +1,4 @@
-<div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-
+<div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 ml-72">
     <!-- SIDEBAR GAUCHE -->
     <aside class="w-72 bg-white h-screen fixed left-0 top-0 border-r border-gray-100 flex flex-col z-40 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
         <!-- Logo -->
@@ -189,7 +188,7 @@
                                 </p>
                             </div>
                             <span class="px-3 py-1 text-sm font-medium bg-yellow-100 text-yellow-800 rounded-full">
-                                ${{ number_format($service->service_base_price, 2) }}
+                                {{ number_format($service->service_base_price, 2) }} DH
                             </span>
                         </div>
                     </div>

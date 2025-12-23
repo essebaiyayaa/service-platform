@@ -418,31 +418,33 @@
                     </div>
 
                     <!-- Priorité -->
-                    <div>
-                        <label class="block text-sm font-bold text-gray-900 mb-3 uppercase tracking-wide">Priorité *</label>
-                        <div class="grid grid-cols-3 gap-3">
-                            <label class="relative cursor-pointer">
-                                <input type="radio" wire:model="priorite" value="faible" class="peer sr-only">
-                                <div class="px-4 py-3 text-center text-sm font-bold border-2 border-gray-200 rounded-xl transition-all peer-checked:border-green-500 peer-checked:bg-green-50 peer-checked:text-green-700 hover:border-green-300">
-                                    Faible
-                                </div>
-                            </label>
-                            <label class="relative cursor-pointer">
-                                <input type="radio" wire:model="priorite" value="moyenne" class="peer sr-only">
-                                <div class="px-4 py-3 text-center text-sm font-bold border-2 border-gray-200 rounded-xl transition-all peer-checked:border-amber-500 peer-checked:bg-amber-50 peer-checked:text-amber-700 hover:border-amber-300">
-                                    Moyenne
-                                </div>
-                            </label>
-                            <label class="relative cursor-pointer">
-                                <input type="radio" wire:model="priorite" value="haute" class="peer sr-only">
-                                <div class="px-4 py-3 text-center text-sm font-bold border-2 border-gray-200 rounded-xl transition-all peer-checked:border-red-500 peer-checked:bg-red-50 peer-checked:text-red-700 hover:border-red-300">
-                                    Haute
-                                </div>
-                            </label>
-                        </div>
-                        @error('priorite') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
-                    </div>
-
+<div>
+    <label class="block text-sm font-bold text-gray-900 mb-3 uppercase tracking-wide">Priorité *</label>
+    <div class="grid grid-cols-3 gap-3">
+        <label class="relative cursor-pointer">
+            <input type="radio" wire:model.live="priorite" name="priorite" value="faible" class="peer sr-only">
+            <div class="px-4 py-3 text-center text-sm font-bold border-2 rounded-xl transition-all
+                {{ $priorite === 'faible' ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 text-gray-700 hover:border-green-300' }}">
+                Faible
+            </div>
+        </label>
+        <label class="relative cursor-pointer">
+            <input type="radio" wire:model.live="priorite" name="priorite" value="moyenne" class="peer sr-only">
+            <div class="px-4 py-3 text-center text-sm font-bold border-2 rounded-xl transition-all
+                {{ $priorite === 'moyenne' ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-gray-200 text-gray-700 hover:border-amber-300' }}">
+                Moyenne
+            </div>
+        </label>
+        <label class="relative cursor-pointer">
+            <input type="radio" wire:model.live="priorite" name="priorite" value="urgente" class="peer sr-only">
+            <div class="px-4 py-3 text-center text-sm font-bold border-2 rounded-xl transition-all
+                {{ $priorite === 'urgente' ? 'border-red-500 bg-red-50 text-red-700' : 'border-gray-200 text-gray-700 hover:border-red-300' }}">
+                Urgente
+            </div>
+        </label>
+    </div>
+    @error('priorite') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+</div>
                     <!-- Preuves (Photos/PDF) -->
                     <div>
                         <label class="block text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide">Preuves (Photos ou PDF)</label>
