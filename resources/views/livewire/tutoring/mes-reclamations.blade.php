@@ -101,8 +101,8 @@
                     >
                         <option value="tous">Toutes les priorités</option>
                         <option value="faible">Faible</option>
-                        <option value="normal">Normal</option>
-                        <option value="urgent">Urgent</option>
+                        <option value="normal">Moyenne</option>
+                        <option value="urgent">Urgente</option>
                     </select>
                 </div>
             </div>
@@ -129,7 +129,7 @@
 
                                         <!-- Badge Priorité -->
 @if($reclamation->priorite === 'urgente')
-    <span class="px-3 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">Urgent</span>
+    <span class="px-3 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">Urgente</span>
 @elseif($reclamation->priorite === 'moyenne')
     <span class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">Moyenne</span>
 @else
