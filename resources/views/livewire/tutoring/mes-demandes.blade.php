@@ -198,20 +198,12 @@
 
                     <!-- Colonne Milieu : Détails Pratiques -->
                     <div class="w-full lg:w-1/3 space-y-3 border-l border-r border-gray-50 px-0 lg:px-6">
-                        <div class="flex items-start gap-3">
-                            <div class="text-gray-400 mt-0.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
-                            <div>
-                                <p class="text-xs text-gray-400 font-bold uppercase mb-0.5">Horaire souhaité</p>
-                                <p class="text-sm font-semibold text-gray-800">
-                                    {{ \Carbon\Carbon::parse($demande->dateSouhaitee)->isoFormat('dddd D MMM') }}, 
-                                    {{ substr($demande->heureDebut, 0, 5) }} - {{ substr($demande->heureFin, 0, 5) }}
-                                </p>
-                            </div>
-                        </div>
+                    
+                        
                         <div class="flex items-start gap-3">
                             <div class="text-gray-400 mt-0.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-1.414 0l-5.648-5.648a1 1 0 01-.174-.223L4.343 8.343A2 2 0 012 6.586V4a2 2 0 012-2h14a2 2 0 012 2v2.586a2 2 0 01-.343 1.657l-4.835 4.835a1 1 0 01-.174.223z"></path></svg></div>
                             <div>
-                                <p class="text-xs text-gray-400 font-bold uppercase mb-0.5">Mode du cours</p>
+                                <p class="text-xs text-gray-400 font-bold uppercase mb-0.5">Mode de cours</p>
                                 <p class="text-sm font-semibold text-gray-800 break-words">
                                     @if($demande->lieu === 'En ligne')
                                         En ligne
@@ -388,6 +380,7 @@
                     
                     <!-- Colonne Centre : Mode + Prix -->
                     <div class="w-full lg:w-1/3 flex flex-col items-center text-center gap-2 mt-8">
+                    
                         <div>
                             <p class="text-xs text-gray-400 font-bold uppercase mb-0.5">Mode de cours</p>
                             <p class="text-sm font-semibold text-gray-800 break-words">
@@ -541,7 +534,7 @@
                         <!-- Badge Statut -->
                         <div class="flex items-center gap-2">
                             <span class="bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full font-medium">
-                                {{ $demande->statut === 'terminée' ? 'Terminée' : ($demande->statut === 'refusée' ? 'Refusée' : ($demande->statut === 'validée' ? 'Validée' : 'Annulée')) }}
+                                {{ $demande->statut === 'terminée' ? 'Terminée' : ($demande->statut === 'refusée' ? 'Refusée' : ($demande->statut === 'validée' ? 'Acceptée' : 'Annulée')) }}
                             </span>
                         </div>
                     </div>

@@ -63,7 +63,7 @@
                 <p class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Résolues</p>
                 <h3 class="text-3xl font-extrabold text-gray-800">{{ $resolues }}</h3>
             </div>
-        </div>s
+        </div>
 
         <!-- Filtres et recherche -->
         <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
@@ -84,8 +84,7 @@
                     <label class="block text-sm font-bold text-gray-700 mb-2">Statut</label>
                     <select 
                         wire:model.live="filtreStatut"
-                        class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
+                        class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="tous">Tous les statuts</option>
                         <option value="en_attente">En attente</option>
                         <option value="resolu">Résolu</option>
