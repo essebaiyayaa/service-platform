@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Livewire\WithPagination;
 use Carbon\Carbon;
+use App\Models\Shared\Feedback as FeedbackModel;
 
 class MesDemandes extends Component
 {
@@ -25,8 +26,28 @@ class MesDemandes extends Component
     // Pour le select de filtre
     public $servicesList = [];
 
+    // Feedback model
+    public $showFeedbackModel = false;
+    public $feedbackToId;
+    public $currentDemandeId;
+
+
+    public $ponctualite = 0;
+    public $credibilite = 0;
+    public $sympathie = 0;
+    public $qualiteTravail = 0;
+    public $proprete = 0;
+    public $commentaire = '';
+
+
+    public $user_id;
+
     public function mount()
     {
+        if(!Auth::check()){
+            return redirect()->route('login');
+        }
+        $this->user_id = Auth::id();
         $this->servicesList = DB::table('services')->get();
     }
 
@@ -161,6 +182,79 @@ class MesDemandes extends Component
 
         $this->showModal = true;
     }
+
+
+    public function openFeedbackModel($idDemande, $feedbackToId){
+        $this->showFeedbackModel = true;
+        $this->feedbackToId = $feedbackToId;
+        $this->currentDemandeId = $idDemande;
+    }
+
+    public function closeFeedbackModel(){
+        $this->showFeedbackModel = false;
+        $this->feedbackToId = null;
+        $this->currentDemandeId = null;
+    }
+
+
+    public function submitFeedback(){
+        
+        try {
+            DB::beginTransaction();
+
+            $demandeExists = DB::table('demandes_intervention')->where('idDemande', $this->currentDemandeId)->exists();
+            $idDemandeToUse = $demandeExists ? $this->currentDemandeId : null;
+
+            
+            $noteMoyenne = min(
+                    ($this->ponctualite + $this->credibilite + 
+                    $this->sympathie + $this->qualiteTravail +
+                    $this->proprete) / 5,
+                    5
+            );
+
+            
+            $feedbackData = [
+                'idAuteur' => $this->user_id,
+                'idCible' => $this->feedbackToId,
+                'typeAuteur' => 'client',
+                'commentaire' => $this->commentaire,
+                'credibilite' => $this->credibilite,
+                'sympathie' => $this->sympathie,
+                'ponctualite' => $this->ponctualite,
+                'proprete' => $this->proprete,
+                'qualiteTravail' => $this->qualiteTravail,
+                'moyenne' => $noteMoyenne,
+                'estVisible' => true,
+                'dateCreation' => now(),
+                'idDemande' => $idDemandeToUse,
+            ];
+            
+            
+            FeedbackModel::create($feedbackData);
+            $this->reset([
+                'proprete',
+                'qualiteTravail',
+                'ponctualite',
+                'credibilite',
+                'commentaire',
+                'sympathie',
+            ]);
+
+            
+
+            $this->closeFeedbackModel();
+            session()->flash('Success', 'Feedback envoyee avec success');
+
+            DB::commit();
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Feedback submission error: ' . $e->getMessage());
+            session()->flash('error', 'Une erreur est survenue: ' . $e->getMessage());
+        }
+    }
+    
 
     public function closeModal()
     {

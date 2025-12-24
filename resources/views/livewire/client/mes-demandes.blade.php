@@ -234,9 +234,29 @@
                             </span>
                         </div>
 
+                        
                         <!-- Time slots -->
                         @if($demande->note_speciales)
-                            <p class="text-xs text-gray-600 line-clamp-2">{{ $demande->note_speciales }}</p>
+                            @php
+                                $parsedAvailability = $this->parseAvailability($demande->note_speciales);
+                            @endphp
+                            
+                            @if($parsedAvailability['type'] === 'json')
+                                <div class="text-xs text-gray-600">
+                                    <div class="font-semibold mb-1">Disponibilités proposées:</div>
+                                    <div class="space-y-1">
+                                        @foreach($parsedAvailability['value'] as $slot)
+                                            <div class="inline-flex items-center bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg mr-3 mb-2 border border-blue-100">
+                                                <span class="font-medium">{{ \Carbon\Carbon::parse($slot['date'])->translatedFormat('d M') }}</span>
+                                                <span class="mx-2 text-blue-300">•</span>
+                                                <span class="font-semibold">{{ $slot['heureDebut'] }} - {{ $slot['heureFin'] }}</span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @else
+                                <p class="text-xs text-gray-600 line-clamp-2">{{ $parsedAvailability['value'] }}</p>
+                            @endif
                         @endif
 
                         <div class="flex flex-wrap items-center gap-3 text-xs text-gray-500">
@@ -267,15 +287,26 @@
                             </p>
                         </div>
 
-                        <div class="flex gap-2 justify-end">
+                        <div class="flex gap-3 justify-end">
                             <button wire:click="openModal({{ $demande->idDemande }})"
-                                class="px-3 py-1.5 bg-blue-600 text-white rounded-full text-xs font-medium hover:bg-blue-700 transition-colors duration-200 flex items-center gap-1">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                class="px-4 py-2 bg-blue-600 text-white rounded-full text-sm font-medium hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                                 Détails
                             </button>
+
+                            @if(\Carbon\Carbon::parse($demande->dateSouhaitee)->isPast())
+                                <button wire:click='openFeedbackModel({{ $demande->idDemande }}, {{ $demande->idIntervenant }})' 
+                                        class="px-4 py-2 bg-emerald-600 text-white rounded-full text-sm font-medium hover:bg-emerald-700 transition-colors duration-200 flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                                    </svg>
+                                    Donner mon avis
+                                </button>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -288,316 +319,6 @@
 
     </div>
     <!-- MODAL DÉTAILS DEMANDE -->
-<<<<<<< HEAD
-    @if($showModal && $selectedDemande)
-        <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <!-- Overlay -->
-            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" wire:click="closeModal"></div>
-
-            <!-- Conteneur du modal -->
-            <div class="flex min-h-screen items-center justify-center p-4">
-                <div class="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl transform transition-all">
-
-                    <!-- En-tête du modal -->
-                    <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 rounded-t-2xl">
-                        <div class="flex items-start justify-between">
-                            <div class="flex-1">
-                                <div class="flex items-center gap-3">
-                                    <div
-                                        class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-                                        @if($selectedDemande->idService == 1)
-                                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
-                                                </path>
-                                            </svg>
-                                        @elseif($selectedDemande->idService == 2)
-                                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
-                                                </path>
-                                            </svg>
-                                        @else
-                                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
-                                                </path>
-                                            </svg>
-                                        @endif
-                                    </div>
-                                    <div>
-                                        <h3 class="text-xl font-bold text-white">
-                                            {{ $selectedDemande->nomService }}
-                                        </h3>
-                                        <p class="text-blue-100 text-sm mt-1">
-                                            Demande #{{ $selectedDemande->idDemande }}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                            <button wire:click="closeModal" class="text-white hover:text-gray-200 transition-colors">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Corps du modal -->
-                    <div class="px-6 py-5 max-h-[70vh] overflow-y-auto">
-
-                        <!-- Badge de statut -->
-                        <div class="flex gap-2 mb-5">
-                            <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold
-                            @if($selectedDemande->statut === 'validée') bg-green-100 text-green-700
-                            @elseif($selectedDemande->statut === 'en_attente') bg-amber-100 text-amber-700
-                            @elseif($selectedDemande->statut === 'refusée') bg-red-100 text-red-700
-                            @elseif($selectedDemande->statut === 'annulée') bg-gray-100 text-gray-700
-                            @else bg-gray-100 text-gray-700
-                            @endif">
-                                <svg class="w-3.5 h-3.5 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
-                                    @if($selectedDemande->statut === 'validée')
-                                        <path fill-rule="evenodd"
-                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                            clip-rule="evenodd" />
-                                    @elseif($selectedDemande->statut === 'en_attente')
-                                        <path fill-rule="evenodd"
-                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                                            clip-rule="evenodd" />
-                                    @else
-                                        <path fill-rule="evenodd"
-                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                                            clip-rule="evenodd" />
-                                    @endif
-                                </svg>
-                                {{ ucfirst(str_replace('_', ' ', $selectedDemande->statut)) }}
-                            </span>
-
-                            <!-- Prix  -->
-                            <div class="ml-auto bg-blue-50 px-4 py-1.5 rounded-full">
-                                <span class="text-xs font-semibold text-blue-600">Prix Total:</span>
-                                <span class="text-sm font-bold text-blue-900 ml-1">{{ $selectedDemande->prix_estime ?? 0 }}
-                                    MAD</span>
-                            </div>
-                        </div>
-
-                        <!-- Informations principales -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-                            <!-- Date souhaitée -->
-                            <div class="bg-gray-50 p-4 rounded-xl">
-                                <p class="text-xs font-semibold text-gray-500 uppercase mb-1 flex items-center gap-1">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
-                                        </path>
-                                    </svg>
-                                    Date souhaitée
-                                </p>
-                                <p class="text-sm text-gray-900 font-medium">
-                                    {{ \Carbon\Carbon::parse($selectedDemande->dateSouhaitee)->format('d/m/Y') }}
-                                </p>
-                            </div>
-
-                            <!-- Horaires -->
-                            <div class="bg-gray-50 p-4 rounded-xl">
-                                <p class="text-xs font-semibold text-gray-500 uppercase mb-1 flex items-center gap-1">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    Horaires
-                                </p>
-                                <p class="text-sm text-gray-900 font-medium">
-                                    {{ substr($selectedDemande->heureDebut, 0, 5) }} -
-                                    {{ substr($selectedDemande->heureFin, 0, 5) }}
-                                </p>
-                            </div>
-
-                            <!-- Date de demande -->
-                            <div class="bg-gray-50 p-4 rounded-xl">
-                                <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Date de demande</p>
-                                <p class="text-sm text-gray-900 font-medium">
-                                    {{ \Carbon\Carbon::parse($selectedDemande->dateDemande)->format('d/m/Y à H:i') }}
-                                </p>
-                            </div>
-
-                            <!-- Intervenant (si assigné) -->
-                            @if($selectedDemande->idIntervenant)
-                                <div class="bg-gray-50 p-4 rounded-xl">
-                                    <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Intervenant assigné</p>
-                                    <div class="flex items-center gap-2">
-                                        @if($selectedDemande->photo_intervenant)
-                                            <img src="{{ asset('storage/' . $selectedDemande->photo_intervenant) }}" alt="Photo"
-                                                class="w-8 h-8 rounded-full object-cover border-2 border-white shadow">
-                                        @else
-                                            <div class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
-                                                <svg class="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd"
-                                                        d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                                                        clip-rule="evenodd" />
-                                                </svg>
-                                            </div>
-                                        @endif
-                                        <div>
-                                            <p class="text-sm text-gray-900 font-medium">
-                                                {{ $selectedDemande->prenom_intervenant }}
-                                                {{ $selectedDemande->nom_intervenant }}
-                                            </p>
-                                            @if($selectedDemande->tel_intervenant)
-                                                <p class="text-xs text-gray-500">{{ $selectedDemande->tel_intervenant }}</p>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
-
-                        <!-- Notes spéciales -->
-                        @if($selectedDemande->note_speciales)
-                            <div class="mb-5">
-                                <h4 class="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z">
-                                        </path>
-                                    </svg>
-                                    @if(isset($selectedDemande->parsed_notes) && $selectedDemande->parsed_notes['type'] === 'json')
-                                        Créneaux sélectionnés
-                                    @else
-                                        Notes spéciales
-                                    @endif
-                                </h4>
-
-                                @if(isset($selectedDemande->parsed_notes) && $selectedDemande->parsed_notes['type'] === 'json')
-                                    {{-- Display JSON as formatted time slots --}}
-                                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                            @foreach($selectedDemande->parsed_notes['value'] as $slot)
-                                                <div class="bg-white p-3 rounded-lg border border-blue-200 flex items-center gap-2">
-                                                    <svg class="w-4 h-4 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                    </svg>
-                                                    <div>
-                                                        <p class="text-sm font-semibold text-gray-900">
-                                                            {{ $slot['day'] ?? $slot['jour'] ?? 'Jour' }}
-                                                        </p>
-                                                        <p class="text-xs text-gray-600">
-                                                            {{ $slot['start'] ?? $slot['debut'] ?? '' }} -
-                                                            {{ $slot['end'] ?? $slot['fin'] ?? '' }}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                @else
-                                    {{-- Display as plain text --}}
-                                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                                        <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ $selectedDemande->note_speciales }}
-                                        </p>
-                                    </div>
-                                @endif
-                            </div>
-                        @endif
-
-                        <!-- SECTION SPÉCIFIQUE : GARDE D'ANIMAUX -->
-                        @if($selectedDemande->idService == 3 && $animalDetails)
-                            <div class="border-t pt-5 mb-5">
-                                <h4 class="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
-                                        </path>
-                                    </svg>
-                                    Informations sur l'animal
-                                </h4>
-
-                                <div class="bg-pink-50 rounded-xl p-4 border border-pink-100">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <!-- Nom et type -->
-                                        <div>
-                                            <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Nom</p>
-                                            <p class="text-sm text-gray-900 font-bold">{{ $animalDetails->nom }}</p>
-                                        </div>
-                                        <div>
-                                            <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Type</p>
-                                            <p class="text-sm text-gray-900 font-medium">{{ ucfirst($animalDetails->type) }}</p>
-                                        </div>
-
-                                        @if($animalDetails->race)
-                                            <div>
-                                                <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Race</p>
-                                                <p class="text-sm text-gray-900 font-medium">{{ $animalDetails->race }}</p>
-                                            </div>
-                                        @endif
-
-                                        @if($animalDetails->age)
-                                            <div>
-                                                <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Âge</p>
-                                                <p class="text-sm text-gray-900 font-medium">{{ $animalDetails->age }} an(s)</p>
-                                            </div>
-                                        @endif
-
-                                        @if($animalDetails->besoins_medicaux)
-                                            <div class="md:col-span-2">
-                                                <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Besoins médicaux</p>
-                                                <p class="text-sm text-gray-700">{{ $animalDetails->besoins_medicaux }}</p>
-                                            </div>
-                                        @endif
-
-                                        @if($animalDetails->notes)
-                                            <div class="md:col-span-2">
-                                                <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Notes</p>
-                                                <p class="text-sm text-gray-700">{{ $animalDetails->notes }}</p>
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-
-                        <!-- Description du service (si disponible) -->
-                        @if($selectedDemande->desc_service)
-                            <div class="border-t pt-5">
-                                <h4 class="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    À propos du service
-                                </h4>
-                                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                                    <p class="text-sm text-gray-700">{{ $selectedDemande->desc_service }}</p>
-                                </div>
-                            </div>
-                        @endif
-
-                    </div>
-
-                    <!-- Pied du modal -->
-                    <div class="bg-gray-50 px-6 py-4 rounded-b-2xl flex justify-between items-center">
-
-                        <button wire:click="closeModal"
-                            class="px-5 py-2.5 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors duration-200 flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                            Fermer
-                        </button>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-    @endif
-=======
 @if($showModal && $selectedDemande)
 <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <!-- Overlay -->
@@ -742,18 +463,37 @@
                 </div>
 
                 <!-- Notes spéciales -->
-                @if($selectedDemande->note_speciales)
-                <div class="mb-5">
-                    <h4 class="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+               
+                @if($demande->note_speciales)
+                    @php
+                        $parsedAvailability = $this->parseAvailability($demande->note_speciales);
+                    @endphp
+                            
+                    @if($parsedAvailability['type'] === 'json')
+                        <div class="text-xs text-gray-600">
+                            <div class="font-semibold mb-1">Disponibilités proposées:</div>
+                                <div class="space-y-1">
+                                    @foreach($parsedAvailability['value'] as $slot)
+                                        <div class="inline-flex items-center bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg mr-3 mb-2 border border-blue-100">
+                                            <span class="font-medium">{{ \Carbon\Carbon::parse($slot['date'])->translatedFormat('d M') }}</span>
+                                            <span class="mx-2 text-blue-300">•</span>
+                                            <span class="font-semibold">{{ $slot['heureDebut'] }} - {{ $slot['heureFin'] }}</span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                    @else
+
+                        <h4 class="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
                         <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
                         </svg>
-                        Notes spéciales
-                    </h4>
-                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                        <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ $selectedDemande->note_speciales }}</p>
-                    </div>
-                </div>
+                            Notes spéciales
+                        </h4>
+                        <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                            <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ $parsedAvailability['value'] }}</p>
+                        </div>
+                    @endif
                 @endif
 
                 <!-- SECTION SPÉCIFIQUE : GARDE D'ANIMAUX -->
@@ -843,5 +583,132 @@
     </div>
 </div>
 @endif
->>>>>>> 8c436d8919985957ccadac4bc7e83bf1af3131bb
+
+
+<!-- Simplified version with all yellow stars -->
+@if($showFeedbackModel)
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <!-- Modal Header -->
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-emerald-100 rounded-lg">
+                            <svg class="w-6 h-6 text-emerald-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900">Donner votre avis</h3>
+                            <p class="text-gray-600 text-sm">Évaluez votre expérience avec l'intervenant</p>
+                        </div>
+                    </div>
+                    <button wire:click="closeFeedbackModel" 
+                            class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="p-6 space-y-6">
+                <!-- Ratings Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    @php
+                        $fields = [
+                            'ponctualite' => 'Ponctualité',
+                            'credibilite' => 'Crédibilité',
+                            'sympathie' => 'Sympathie',
+                            'qualiteTravail' => 'Qualité de Travail',
+                            'proprete' => 'Propreté',
+                        ];
+                    @endphp
+                    
+                    @foreach($fields as $field => $label)
+                        <div class="space-y-2">
+                            <label class="block font-medium text-gray-700">
+                                {{ $label }}
+                            </label>
+                            <div class="flex items-center gap-1">
+                                @for($i = 1; $i <= 5; $i++)
+                                    <button type="button" 
+                                            wire:click="$set('{{ $field }}', {{ $i }})"
+                                            class="focus:outline-none transition-transform hover:scale-110">
+                                        <svg class="w-8 h-8 {{ $i <= ${$field} ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300' }}" 
+                                             fill="currentColor" 
+                                             viewBox="0 0 20 20">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                    </button>
+                                @endfor
+                                <span class="ml-2 text-sm font-medium text-gray-600">
+                                    {{ ${$field} }}/5
+                                </span>
+                            </div>
+                        </div>
+                    @endforeach
+
+                    <!-- Average Score -->
+                    <div class="bg-gradient-to-r from-gray-50 to-white p-4 rounded-xl border border-gray-200">
+                        <div class="text-center">
+                            <div class="text-sm text-gray-600 mb-1">Note moyenne</div>
+                            @php
+                                $average = ($ponctualite + $credibilite + $sympathie + $qualiteTravail + $proprete) / 5;
+                            @endphp
+                            <div class="text-3xl font-bold text-gray-900 mb-2">
+                                {{ number_format($average, 1) }}/5
+                            </div>
+                            <div class="flex items-center justify-center gap-1">
+                                @for($i = 1; $i <= 5; $i++)
+                                    <svg class="w-5 h-5 {{ $i <= round($average) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300' }}" 
+                                         fill="currentColor" 
+                                         viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                    </svg>
+                                @endfor
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comment Section -->
+                <div class="space-y-2">
+                    <label class="block font-medium text-gray-700">
+                        Commentaire (optionnel)
+                    </label>
+                    <textarea wire:model="commentaire" 
+                              rows="4"
+                              placeholder="Partagez votre expérience, vos suggestions ou vos remarques..."
+                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors resize-none"></textarea>
+                    <p class="text-sm text-gray-500">
+                        Votre commentaire aide à améliorer la qualité du service.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-6 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+                <div class="flex items-center justify-between">
+                    <button wire:click="closeFeedbackModel"
+                            type="button"
+                            class="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200 font-medium">
+                        Annuler
+                    </button>
+                    
+                    <button wire:click="submitFeedback"
+                            type="button"
+                            class="px-6 py-2.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors duration-200 font-medium flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                        Envoyer l'avis
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
+
 </div>
