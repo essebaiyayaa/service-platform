@@ -107,6 +107,14 @@ class MesDemandes extends Component
         $this->showAdvancedFilters = !$this->showAdvancedFilters;
     }
 
+    public function resetFilters()
+    {
+        $this->filterMatiere = 'all';
+        $this->filterNiveau = 'all';
+        $this->datePeriod = 'all';
+        $this->filterSort = 'recent';
+    }
+
     public function getStatsProperty()
     {
         $userId = Auth::id();
