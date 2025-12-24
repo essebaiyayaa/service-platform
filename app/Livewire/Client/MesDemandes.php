@@ -331,11 +331,15 @@ class MesDemandes extends Component
         // Calculer le prix pour chaque demande selon son type de service
         foreach ($demandes as $demande) {
             $demande->prix_estime = $this->calculerPrixIntervention($demande);
+              $demande->feedback_existe = DB::table('feedbacks')
+            ->where('idAuteur', $this->user_id)
+            ->where('idDemande', $demande->idDemande)
+            ->exists();
         }
 
         return view('livewire.client.mes-demandes', [
-            'demandes' => $demandes,
-            'stats' => $stats
-        ])->layout('layouts.app');
+        'demandes' => $demandes,
+        'stats' => $stats
+    ])->layout('layouts.app');
     }
 }

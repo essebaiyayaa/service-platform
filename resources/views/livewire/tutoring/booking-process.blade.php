@@ -1,7 +1,7 @@
 <div class="min-h-screen bg-white">
-    <livewire:shared.header />
+    <livewire:shared.header wire:key="header-component" />
 
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12" wire:key="booking-content">
         <!-- Progress Steps -->
         <div class="mb-10">
             <div class="flex items-center justify-center">
